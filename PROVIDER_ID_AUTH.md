@@ -1,4 +1,4 @@
-# Health ID / Provider ID Authentication Flow
+# Provider ID Authentication Flow
 
 เอกสารนี้สรุปแนวคิด (concept) และไฟล์ที่ใช้ในการทำ Health ID authentication แล้วเชื่อมต่อไปยัง Provider ID เพื่อนำข้อมูล profile มาใช้ในระบบ
 
@@ -145,13 +145,15 @@ export const {
 
 import { redirect } from 'next/navigation';
 
-export const signInWithHealthId = async (formData: FormData) => {
-  const landing = formData.get('landing');
-  const clientId = process.env.HEALTH_CLIENT_ID;
-  const redirectUri = process.env.HEALTH_REDIRECT_URI;
-  const url = `https://moph.id.th/oauth/redirect?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&landing=${landing}`;
-  redirect(url);
+export const providerIdProcess = async (formData: FormData) => {
+    const landing = formData.get('landing');
+    const is_auth = formData.get('is_auth');
+    const clientId = process.env.HEALTH_CLIENT_ID;
+    const redirectUri = process.env.HEALTH_REDIRECT_URI;
+    const url = `https://moph.id.th/oauth/redirect?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&landing=${landing}&is_auth=${is_auth}`;
+    redirect(url);
 }
+
 ```
 
 แนวคิด:
@@ -159,7 +161,7 @@ export const signInWithHealthId = async (formData: FormData) => {
 - รับ `FormData` จากหน้า UI
   - ดึงค่า `landing` (เช่น `/profile`) เพื่อส่งต่อไปใน query string
 - สร้าง URL ไปยัง Health ID OAuth endpoint (`https://moph.id.th/oauth/redirect`)
-  - แนบ `client_id`, `redirect_uri`, `response_type=code`, และ `landing`
+  - แนบ `client_id`, `redirect_uri`, `response_type=code`, `is_auth`, และ `landing`
 - ใช้ `redirect(url)` เพื่อเปลี่ยนหน้าไปที่ Health ID ให้ผู้ใช้กดยืนยันสิทธิ์
 
 ▶︎ สรุป: ไฟล์นี้คือจุดเริ่ม flow – กดปุ่มจากหน้าเว็บ → ถูก redirect ไปที่ Health ID เพื่อขอ authorization code
@@ -171,7 +173,7 @@ export const signInWithHealthId = async (formData: FormData) => {
 **ตัวอย่าง code (`src/app/test-auth/page.tsx` ):**
 
 ```tsx
-import { signInWithHealthId } from "../actions/sign-in";
+import { providerIdProcess } from "../actions/sign-in";
 
 export default function TestAuthPage() {
   return (
@@ -179,8 +181,9 @@ export default function TestAuthPage() {
       <div className="p-6 rounded-lg shadow bg-white space-y-4 text-center">
         <h1 className="text-lg font-semibold">Test Auth</h1>
         <p className="text-sm text-gray-600">ทดสอบ Sign in ด้วย Health ID</p>
-        <form action={signInWithHealthId}>
+        <form action={providerIdProcess}>
           <input type="hidden" name="landing" value="/profile" />
+          <input type="hidden" name="is_auth" value="yes" />
           <button
             type="submit"
             className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -196,7 +199,7 @@ export default function TestAuthPage() {
 
 แนวคิด:
 - เป็นหน้า UI ง่ายๆ สำหรับทดสอบ flow
-- ใช้ `<form action={signInWithHealthId}>`
+- ใช้ `<form action={providerIdProcess}>`
   - เมื่อกดปุ่มจะ POST ไปที่ server action ด้านบน
 - ส่ง hidden field `landing="/profile"`
   - ทำให้เมื่อ flow sign-in เสร็จ จะ redirect กลับมา `/profile`
@@ -210,40 +213,101 @@ export default function TestAuthPage() {
 **ตัวอย่าง code (`src/app/api/auth/healthid/route.ts` ):**
 
 ```ts
+
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { signIn } from '@/authConfig'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const code = searchParams.get('code');
-  const landing = searchParams.get('landing')
-  const redirectTo = landing || '/home';
+    const { searchParams } = request.nextUrl;
+    const code = searchParams.get('code');
+    const landing = searchParams.get('landing')
+    const is_auth = searchParams.get('is_auth') === 'yes';
+    const redirectTo = landing || '/';
 
-  if (!code) {
-    return NextResponse.json({ error: 'Authorization code is missing' }, { status: 400 });
-  }
+    if (!code) {
+        return NextResponse.json({ error: 'Authorization code is missing' }, { status: 400 });
+    }
+    console.log("Authorization Health id Code :", code);
 
-  // 1) แลก code เป็น Health ID token
-  const response = await fetch('https://moph.id.th/api/v1/token', { ... });
-  //   ได้ data.data.access_token
+    const response = await fetch('https://moph.id.th/api/v1/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: process.env.HEALTH_REDIRECT_URI,
+            client_id: process.env.HEALTH_CLIENT_ID,
+            client_secret: process.env.HEALTH_CLIENT_SECRET
+        })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        return NextResponse.json({ error: data.error || 'Failed to fetch Health ID token' }, { status: response.status });
+    }
+    // Removed sensitive data logging for security
 
-  // 2) ใช้ Health ID token ไปขอ Provider ID token
-  const userResponse = await fetch('https://provider.id.th/api/v1/services/token', { ... });
-  //   ได้ userData.data.access_token
 
-  // 3) ใช้ Provider ID token ไปดึง profile
-  const profileResponse = await fetch('https://provider.id.th/api/v1/services/profile?position_type=1', { ... });
-  //   ได้ profileData.data
+    const userResponse = await fetch('https://provider.id.th/api/v1/services/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            client_id: process.env.PROVIDER_CLIENT_ID,
+            secret_key: process.env.PROVIDER_CLIENT_SECRET, // Changed from PROVIDER_SECRET_KEY
+            token_by: 'Health ID',
+            token: data.data.access_token
+        })
+    });
+    const userData = await userResponse.json();
+    // Removed sensitive data logging for security
+    if (!userResponse.ok) {
+        return NextResponse.json({ error: userData.error || 'Failed to fetch provider data' }, { status: userResponse.status });
+    }
 
-  // 4) เรียก NextAuth.signIn ด้วย credentials provider
-  const res = await signIn('credentials', {
-    'cred-way': 'provider-id',
-    'profile': JSON.stringify(profileData.data),
-    redirectTo: redirectTo
-  });
+    const profileResponse = await fetch('https://provider.id.th/api/v1/services/profile?position_type=1', {
+        method: 'GET',
+        headers: {
+            'client-id': process.env.PROVIDER_CLIENT_ID!,
+            'secret-key': process.env.PROVIDER_CLIENT_SECRET!,
+            'Authorization': `Bearer ${userData.data.access_token}`
+        }
 
-  return res;
+    });
+    const profileData = await profileResponse.json();
+    // Removed sensitive data logging for security
+    if (!profileResponse.ok) {
+        return NextResponse.json({ error: profileData.error || 'Failed to fetch profile data' }, { status: profileResponse.status });
+    }
+
+    if (!is_auth) {
+        //เก็บ profileData.data ลง session
+        //redirectpage ไปที่ตัวแปร landing
+        const res = NextResponse.redirect(new URL(redirectTo, request.url));
+        res.cookies.set('profile', JSON.stringify(profileData.data), {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 10, // 10 minutes
+        });
+        return res;
+    }
+    
+    const res = await signIn('credentials', {
+        'cred-way': 'provider-id',
+        'profile': JSON.stringify(profileData.data),
+        redirectTo: redirectTo
+    });
+    console.log("res sign in = ", res);
+    
+    // Return the signIn result to ensure proper route handler response
+    return res;
 }
+
 ```
 
 แนวคิด (flow หลัก):
@@ -255,6 +319,7 @@ export async function GET(request: NextRequest) {
    - ส่ง `cred-way = 'provider-id'`
    - แนบ `profile` เป็น JSON string
    - แนบ `redirectTo = landing || '/home'`
+   - ถ้าแนบ `is_auth = yes` จะทำ credentials sign-in ถ้า no จะเก็บ profileData.data ลง session
 6. NextAuth จะสร้าง session และ redirect ผู้ใช้ไปยังหน้าที่ต้องการ (เช่น `/profile`)
 
 ▶︎ สรุป: route นี้คือ "backend callback" ที่รับ code จาก Health ID แล้วจัดการทุกอย่างจนเสร็จสิ้นการ login ด้วย Provider ID

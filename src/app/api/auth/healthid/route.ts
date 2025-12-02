@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { signIn } from '@/authConfig'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const code = searchParams.get('code');
     const landing = searchParams.get('landing')
-    const redirectTo = landing || '/home';
+    const is_auth = searchParams.get('is_auth') === 'yes';
+    const redirectTo = landing || '/';
 
     if (!code) {
         return NextResponse.json({ error: 'Authorization code is missing' }, { status: 400 });
@@ -65,7 +67,20 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: profileData.error || 'Failed to fetch profile data' }, { status: profileResponse.status });
     }
 
-    //return NextResponse.json(profileData.data);
+    if (!is_auth) {
+        //เก็บ profileData.data ลง session
+        //redirectpage ไปที่ตัวแปร landing
+        const res = NextResponse.redirect(new URL(redirectTo, request.url));
+        res.cookies.set('profile', JSON.stringify(profileData.data), {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 10, // 10 minutes
+        });
+        return res;
+    }
+    
     const res = await signIn('credentials', {
         'cred-way': 'provider-id',
         'profile': JSON.stringify(profileData.data),

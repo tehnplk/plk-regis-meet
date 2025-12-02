@@ -1,4 +1,4 @@
-import { signInWithHealthId } from "../actions/sign-in";
+import { providerIdProcess } from "../actions/sign-in";
 
 export default function TestAuthPage() {
   return (
@@ -6,8 +6,9 @@ export default function TestAuthPage() {
       <div className="p-6 rounded-lg shadow bg-white space-y-4 text-center">
         <h1 className="text-lg font-semibold">Test Auth</h1>
         <p className="text-sm text-gray-600">ทดสอบ Sign in ด้วย Health ID</p>
-        <form action={signInWithHealthId}>
+        <form action={providerIdProcess}>
           <input type="hidden" name="landing" value="/profile" />
+          <input type="hidden" name="is_auth" value="no" />
           <button
             type="submit"
             className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
