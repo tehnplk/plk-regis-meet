@@ -1,7 +1,7 @@
 import { auth } from "@/authConfig";
 
 export default async function ProfilePage() {
-  let session: Awaited<ReturnType<typeof auth>> | null = null;
+  let session: any = null;
 
   try {
     session = await auth();

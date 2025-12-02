@@ -5,7 +5,19 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Header, RegistrationForm } from '../../_components/event-ui';
 import type { Event } from '../../_data/database';
 
-export default function RegisterByFormPageClient() {
+type InitialProfile = {
+  name?: string;
+  org?: string;
+  position?: string;
+  email?: string;
+  phone?: string;
+};
+
+export default function RegisterByFormPageClient({
+  initialProfile,
+}: {
+  initialProfile?: InitialProfile;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventIdParam = searchParams.get('eventId');
@@ -63,6 +75,7 @@ export default function RegisterByFormPageClient() {
         <RegistrationForm
           eventId={eventId}
           eventTitle={event?.title}
+          initialProfile={initialProfile}
           onSubmitted={() => router.push('/')}
         />
       </main>

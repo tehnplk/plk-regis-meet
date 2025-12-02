@@ -430,12 +430,20 @@ export const RegistrationForm = ({
   eventId,
   eventTitle,
   onSubmitted,
+  initialProfile,
 }: {
   eventId?: number;
   eventTitle?: string;
   onSubmitted?: () => void;
+  initialProfile?: {
+    name?: string;
+    org?: string;
+    position?: string;
+    email?: string;
+    phone?: string;
+  };
 }) => {
-  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState(initialProfile?.phone ?? '');
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -515,6 +523,7 @@ export const RegistrationForm = ({
           type="text"
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
           placeholder="เช่น นายสมชาย มีมาก"
+          defaultValue={initialProfile?.name}
         />
       </div>
 
@@ -529,6 +538,7 @@ export const RegistrationForm = ({
             type="text"
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="ส่วนราชการ/องค์กร"
+            defaultValue={initialProfile?.org}
           />
         </div>
         <div>
@@ -538,6 +548,7 @@ export const RegistrationForm = ({
             type="text"
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="ระบุตำแหน่ง"
+            defaultValue={initialProfile?.position}
           />
         </div>
       </div>
@@ -553,6 +564,7 @@ export const RegistrationForm = ({
             type="email"
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="name@example.com"
+            defaultValue={initialProfile?.email}
           />
         </div>
         <div>
