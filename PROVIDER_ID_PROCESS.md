@@ -195,6 +195,9 @@ export default function TestAuthPage() {
   - เมื่อกดปุ่มจะ POST ไปที่ server action ด้านบน
 - ส่ง hidden field `landing="/profile"`
   - ทำให้เมื่อ flow sign-in เสร็จ จะ redirect กลับมา `/profile`
+- ส่ง hidden filed is_auth
+  - กำหนดให้เป็น `yes` เพื่อให้ sign-in ผ่าน Health ID
+  - กำหนดให้เป็น `no` เพื่อดึง provider profile มาเก็บที่ session เฉยๆ
 
 ▶︎ สรุป: หน้า `/test-auth` คือ test entry point ให้ dev กดปุ่มแล้วเดินตาม Health ID → Provider ID → กลับมาดู profile ที่ `/profile`
 
