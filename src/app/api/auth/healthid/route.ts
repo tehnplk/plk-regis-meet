@@ -4,8 +4,8 @@ import { signIn } from '@/authConfig'
 export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const code = searchParams.get('code');
-   
-    const redirectTo = '/home';
+    const landing = searchParams.get('landing')
+    const redirectTo = landing || '/home';
 
     if (!code) {
         return NextResponse.json({ error: 'Authorization code is missing' }, { status: 400 });
