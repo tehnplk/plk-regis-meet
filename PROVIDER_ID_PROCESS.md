@@ -1,4 +1,4 @@
-# Provider ID Authentication Flow
+# Provider ID Process Flow
 
 เอกสารนี้สรุปแนวคิด (concept) และไฟล์ที่ใช้ในการทำ Health ID authentication แล้วเชื่อมต่อไปยัง Provider ID เพื่อนำข้อมูล profile มาใช้ในระบบ
 
