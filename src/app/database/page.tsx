@@ -70,7 +70,7 @@ export default function DatabasePage() {
   const renderRowsTable = () => {
     if (!selectedTable) return null;
 
-    let content: JSX.Element;
+    let content;
 
     if (loadingRows) {
       content = (

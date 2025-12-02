@@ -1,7 +1,16 @@
 import { auth } from "@/authConfig";
 
 export default async function ProfilePage() {
-  const session = await auth();
+  let session: Awaited<ReturnType<typeof auth>> | null = null;
+
+  try {
+    session = await auth();
+  } catch (error) {
+    // กรณี JWTSessionError หรือปัญหา session อื่น ๆ ให้ถือว่าเป็นยังไม่ล็อกอิน
+    console.error("[profile] auth() error", error);
+    session = null;
+  }
+
   const rawProfile = (session?.user as any)?.profile as string | undefined;
 
   let parsedProfile: unknown = null;
