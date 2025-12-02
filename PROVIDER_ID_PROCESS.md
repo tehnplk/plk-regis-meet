@@ -13,15 +13,7 @@
 
 ## 0. การตั้งค่าใน `.env`
 
-ก่อนเริ่มใช้งาน flow นี้ ต้องกำหนดตัวแปรสภาพแวดล้อม (Environment Variables) ให้ครบ โดยอย่างน้อยมี:
-
-- `HEALTH_CLIENT_ID = 'Client ID ที่ได้จากระบบ Health ID'`
-- `HEALTH_REDIRECT_URI = 'URL callback ของ Health ID (เช่น https://your-domain.com/api/auth/healthid)'`
-- `HEALTH_CLIENT_SECRET = 'Client Secret ของ Health ID'`
-- `PROVIDER_CLIENT_ID = 'Client ID สำหรับ Provider ID'`
-- `PROVIDER_CLIENT_SECRET = 'Secret / Key สำหรับ Provider ID'`
-- `NEXTAUTH_SECRET = 'ค่า secret ของ NextAuth (ใช้เข้ารหัส token/session)'`
-- `NEXTAUTH_URL = 'Base URL ของระบบ เช่น https://your-domain.com'`
+ก่อนเริ่มใช้งาน flow นี้ ต้องกำหนดตัวแปรสภาพแวดล้อม (Environment Variables) ให้ครบ ตามตัวอย่าง:
 
 **ตัวอย่าง code (`.env` ):**
 
