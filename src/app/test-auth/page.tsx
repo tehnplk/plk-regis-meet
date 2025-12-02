@@ -8,7 +8,7 @@ export default function TestAuthPage() {
         <p className="text-sm text-gray-600">ทดสอบ Sign in ด้วย Health ID</p>
         <form action={providerIdProcess}>
           <input type="hidden" name="landing" value="/profile" />
-          <input type="hidden" name="is_auth" value="no" />
+          <input type="hidden" name="is_auth" value="yes" />
           <button
             type="submit"
             className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
