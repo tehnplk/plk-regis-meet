@@ -303,6 +303,64 @@ export default async function ProfilePage() {
 }
 ```
 
+**ตัวอย่าง profile ที่ได้จาก Provider ID:**
+
+```JSON
+{
+  "account_id": "13347845zzzzzz",
+  "hash_cid": "4e060f4f64085f66eea56aa85497849zzzzzzz4af8c73f5a7523c3a0c3",
+  "provider_id": "0Bzz1DAFzzzzz",
+  "title_th": "นาย",
+  "special_title_th": "อื่นๆ",
+  "name_th": "อุเทน zzzz",
+  "name_eng": "Utehn zzzz",
+  "created_at": "2024-02-29T05:44:52.000Z",
+  "title_en": "Mr.",
+  "special_title_en": "Other",
+  "firstname_th": "อุเทน",
+  "lastname_th": "จาดzzzz",
+  "firstname_en": "Utehn",
+  "lastname_en": "Jadyazzz",
+  "email": "tehnplk@zzzzz.com",
+  "date_of_birth": "1980-04-30",
+  "organization": [
+    {
+      "business_id": "435750133244444",
+      "position": "นักวิชาการสาธารณสุข",
+      "position_id": "0011",
+      "affiliation": "นักวิชาการสาธารณสุข",
+      "license_id": null,
+      "hcode": "00015",
+      "code9": "000001500",
+      "hcode9": "AA0000015",
+      "level": "3",
+      "hname_th": "สำนักงานสาธารณสุขจังหวัดพิษณุโลก",
+      "hname_eng": "Provincial Public Health Office",
+      "tax_id": "2885556200000792",
+      "license_expired_date": null,
+      "license_id_verify": false,
+      "expertise": null,
+      "expertise_id": null,
+      "moph_station_ref_code": null,
+      "is_private_provider": false,
+      "address": {
+        "address": null,
+        "moo": null,
+        "building": null,
+        "soi": null,
+        "street": null,
+        "province": "พิษณุโลก",
+        "district": "เมืองพิษณุโลก",
+        "sub_district": "ในเมือง",
+        "zip_code": "65000"
+      },
+      "position_type": "นักวิชาการสาธารณสุข"
+    }
+  ]
+}
+
+```
+
 แนวคิด:
 - ใช้ `auth()` เพื่อดึง session ในฝั่ง server component
 - ดึง `session.user.profile`
