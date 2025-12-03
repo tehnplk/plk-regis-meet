@@ -2,7 +2,7 @@
 
 เอกสารนี้สรุปแนวคิด (concept) และไฟล์ที่ใช้ในการทำ Health ID authentication แล้วเชื่อมต่อไปยัง Provider ID เพื่อนำข้อมูล profile มาใช้ในระบบ
 
-ไฟล์ที่เกี่ยวข้อง:
+ไฟล์ตัวอย่างที่เกี่ยวข้อง:
 - `src/authConfig.ts`
 - `src/app/actions/sign-in.ts`
 - `src/app/test-auth/page.tsx`
@@ -138,12 +138,22 @@ export const {
 import { redirect } from 'next/navigation';
 
 export const providerIdProcess = async (formData: FormData) => {
-    const landing = formData.get('landing');
-    const is_auth = formData.get('is_auth');
+  
+    const url = new URL("https://moph.id.th/oauth/redirect");
     const clientId = process.env.HEALTH_CLIENT_ID;
+    const landing = formData.get('landing');
+    const is_auth = formData.get('is_auth');    
     const redirectUri = process.env.HEALTH_REDIRECT_URI;
-    const url = `https://moph.id.th/oauth/redirect?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&landing=${landing}&is_auth=${is_auth}`;
-    redirect(url);
+    
+    url.searchParams.set("client_id", clientId); 
+    url.searchParams.set("redirect_uri", redirectUri);   
+    url.searchParams.set("response_type", "code");
+    
+    url.searchParams.set("landing", landing);
+    url.searchParams.set("is_auth", is_auth);
+     
+
+    redirect(url.toString());
 }
 
 ```
@@ -450,3 +460,9 @@ export default async function ProfilePage() {
 ด้วยโครงนี้ คุณสามารถ:
 - เปลี่ยน `landing` เป็นหน้าอื่นได้ (เช่น `/home`, `/dashboard`)
 - นำค่า `session.user.profile` ไป map เป็น user model ภายในระบบต่อได้ในภายหลัง
+
+### 7. การขึ้นระบบครั้งแรก
+```
+ควร copy code จากไฟล์นี้เลย และไม่ควรแก้ไข code ให้ต่างจากต้นฉบับ
+
+```
