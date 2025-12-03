@@ -446,8 +446,8 @@ export default async function ProfilePage() {
 
 ## 6. ภาพรวม Flow แบบย่อ
 
-1. ผู้ใช้เปิด `/test-auth` แล้วกดปุ่ม **"Sign in with Health ID"**
-2. ฟอร์มส่งไปที่ server action `signInWithHealthId`
+1. ผู้ใช้เปิด `/test-auth` แล้วกดปุ่ม **"Sign in"**
+2. ฟอร์มส่งไปที่ server action `providerIdProcess`
 3. server action redirect ไปที่ Health ID OAuth URL พร้อม `redirect_uri` ชี้กลับมา `/api/auth/healthid` และส่ง `landing=/profile`
 4. หลังผู้ใช้ยืนยันบน Health ID:
    - Health ID redirect กลับ `/api/auth/healthid?code=...&landing=/profile`
