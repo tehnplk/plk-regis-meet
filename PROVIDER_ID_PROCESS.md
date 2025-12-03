@@ -30,6 +30,7 @@ PROVIDER_CLIENT_SECRET=your-provider-client-secret
 # NextAuth (ตัวอย่าง)
 NEXTAUTH_SECRET=your-nextauth-secret
 NEXTAUTH_URL=https://your-domain.com
+AUTH_TRUST_HOST=true
 ```
 
 ---
