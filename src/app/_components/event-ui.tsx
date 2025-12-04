@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import QRCode from 'react-qr-code';
+import { useAppSession } from './app-session-context';
 import {
   AlertTriangle,
   Calendar,
@@ -36,11 +37,51 @@ const STATUS_STYLES: Record<EventStatus | 'confirmed' | 'pending' | 'cancelled',
   postponed: 'bg-purple-100 text-purple-700 border-purple-200',
 };
 
+const TH_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+function formatThaiDate(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  const isoMatch = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(trimmed);
+  if (!isoMatch) {
+    return trimmed;
+  }
+
+  const year = Number(isoMatch[1]);
+  const month = Number(isoMatch[2]);
+  const day = Number(isoMatch[3]);
+
+  if (!year || !month || !day || month < 1 || month > 12) {
+    return trimmed;
+  }
+
+  const buddhistYear = year + 543;
+  const monthName = TH_MONTHS_SHORT[month - 1];
+  const dayStr = String(day).padStart(2, '0');
+  const yearShort = String(buddhistYear).slice(-2);
+
+  return `${dayStr} ${monthName} ${yearShort}`;
+}
+
 export const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const showBack = pathname !== '/';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { userName } = useAppSession();
+
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/api/auth/signout?callbackUrl=/';
+    }
+  };
+
+  const displayName = userName ?? 'ผู้ใช้งาน';
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
@@ -63,10 +104,27 @@ export const Header = () => {
             <h1 className="text-xl font-bold text-gray-800">EventReg System</h1>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-            G
-          </div>
+        <div className="flex items-center gap-4 text-sm">
+          {userName ? (
+            <div className="flex items-center gap-2">
+              <span className="max-w-[160px] truncate text-gray-700">{displayName}</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-xs text-red-600 hover:underline"
+              >
+                [ออกระบบ]
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogin}
+              className="px-3 py-1.5 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              เข้าระบบ
+            </button>
+          )}
         </div>
       </div>
     </header>
@@ -91,15 +149,20 @@ export const DateDisplay = ({
   startDate: string;
   endDate: string | null;
   iconSize?: number;
-}) => (
-  <div className="flex items-center gap-2">
-    <Calendar size={iconSize} className="text-blue-500 shrink-0" />
-    <span>
-      {startDate}
-      {endDate && endDate !== startDate ? ` - ${endDate}` : ''}
-    </span>
-  </div>
-);
+}) => {
+  const formattedStart = formatThaiDate(startDate);
+  const formattedEnd = endDate ? formatThaiDate(endDate) : null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <Calendar size={iconSize} className="text-blue-500 shrink-0" />
+      <span>
+        {formattedStart}
+        {formattedEnd && formattedEnd !== formattedStart ? ` - ${formattedEnd}` : ''}
+      </span>
+    </div>
+  );
+};
 
 export const EventCards = ({
   events,
@@ -112,6 +175,8 @@ export const EventCards = ({
 }) => {
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [qrTitle, setQrTitle] = useState<string | null>(null);
+  const pathname = usePathname();
+  const showCreateButton = pathname !== '/';
 
   const handleOpenQr = (event: Event) => {
     if (typeof window === 'undefined') return;
@@ -128,17 +193,16 @@ export const EventCards = ({
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">รายการกิจกรรม</h2>
-          <p className="text-gray-500 text-sm mt-1">จัดการและดูรายละเอียดกิจกรรมทั้งหมด</p>
-        </div>
-        <a
-          href="/create-event"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
-        >
-          <UserPlus size={18} />
-          <span>สร้างกิจกรรมใหม่</span>
-        </a>
+        <div />
+        {showCreateButton && (
+          <a
+            href="/create-event"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
+          >
+            <UserPlus size={18} />
+            <span>สร้างกิจกรรมใหม่</span>
+          </a>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -151,6 +215,7 @@ export const EventCards = ({
               key={event.id}
               className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden flex flex-col"
             >
+              <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500" />
               <div className="p-5 flex-1">
                 <div className="flex justify-between items-start mb-3">
                   <StatusBadge status={event.status} />

@@ -25,6 +25,7 @@ export interface Event {
   capacity: number;
   status: EventStatus;
   description: string;
+  docLink?: string | null;
 }
 
 export interface Participant {

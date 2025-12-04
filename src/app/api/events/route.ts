@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     longitude,
     enableCheckInRadius,
     checkInRadiusMeters,
+    docLink,
   } = body as {
     title?: string;
     date?: string;
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
     longitude?: number | string | null;
     enableCheckInRadius?: boolean;
     checkInRadiusMeters?: number | string | null;
+    docLink?: string | null;
   };
 
   const numericCapacity =
@@ -96,6 +98,7 @@ export async function POST(request: Request) {
       capacity: numericCapacity,
           status: eventStatus,
           description,
+          docLink,
         },
       });
 
