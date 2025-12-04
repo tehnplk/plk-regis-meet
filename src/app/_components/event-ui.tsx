@@ -173,22 +173,8 @@ export const EventCards = ({
   onRegisterClick: (event: Event) => void;
   onViewParticipants: (event: Event) => void;
 }) => {
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
-  const [qrTitle, setQrTitle] = useState<string | null>(null);
   const pathname = usePathname();
   const showCreateButton = pathname !== '/';
-
-  const handleOpenQr = (event: Event) => {
-    if (typeof window === 'undefined') return;
-    const registerUrl = `${window.location.origin}/register?eventId=${event.id}`;
-    setQrUrl(registerUrl);
-    setQrTitle(event.title);
-  };
-
-  const handleCloseQr = () => {
-    setQrUrl(null);
-    setQrTitle(null);
-  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -209,6 +195,9 @@ export const EventCards = ({
         {events.map((event) => {
           const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
           const progress = Math.min((event.registered / event.capacity) * 100, 100);
+          const qrValue = typeof window !== 'undefined'
+            ? `${window.location.origin}/register?eventId=${event.id}`
+            : `/register?eventId=${event.id}`;
 
           return (
             <div
@@ -237,10 +226,52 @@ export const EventCards = ({
                     <span className="truncate">{event.location}</span>
                   </div>
                 </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                    <QRCode value={qrValue} size={80} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      disabled={isUnavailable}
+                      onClick={() => onRegisterClick(event)}
+                      className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
+                        isUnavailable
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {event.status === 'cancelled' ? (
+                        <XCircle size={16} />
+                      ) : event.status === 'postponed' ? (
+                        <AlertTriangle size={16} />
+                      ) : (
+                        <UserPlus size={16} />
+                      )}
+                      <span>
+                        {event.status === 'cancelled'
+                          ? 'ยกเลิกแล้ว'
+                          : event.status === 'postponed'
+                          ? 'เลื่อน'
+                          : event.status === 'full'
+                          ? 'เต็ม'
+                          : 'ลงทะเบียน'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onViewParticipants(event)}
+                      className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                    >
+                      ดูรายชื่อ
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className="bg-gray-50 px-5 py-4 border-t border-gray-100 mt-auto">
-                <div className="flex justify-between items-center mb-3">
+                <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
                     <Users size={16} />
                     <span>
@@ -256,92 +287,11 @@ export const EventCards = ({
                     />
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    disabled={isUnavailable}
-                    onClick={() => onRegisterClick(event)}
-                    className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm ${
-                      isUnavailable
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {event.status === 'cancelled' ? (
-                      <XCircle size={16} />
-                    ) : event.status === 'postponed' ? (
-                      <AlertTriangle size={16} />
-                    ) : (
-                      <UserPlus size={16} />
-                    )}
-                    <span>
-                      {event.status === 'cancelled'
-                        ? 'ยกเลิกแล้ว'
-                        : event.status === 'postponed'
-                        ? 'เลื่อน'
-                        : event.status === 'full'
-                        ? 'เต็ม'
-                        : 'ลงทะเบียน'}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onViewParticipants(event)}
-                    className="py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                  >
-                    ดูรายชื่อ
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenQr(event)}
-                    className="py-2 bg-white border border-dashed border-blue-400 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
-                  >
-                    QR ลงทะเบียน
-                  </button>
-                </div>
               </div>
             </div>
           );
         })}
       </div>
-
-      {qrUrl && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">QR ลงทะเบียน</h3>
-              <button
-                type="button"
-                onClick={handleCloseQr}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <XCircle size={18} />
-              </button>
-            </div>
-            {qrTitle && (
-              <p className="text-sm text-gray-600 line-clamp-2">{qrTitle}</p>
-            )}
-            <div className="flex justify-center">
-              <div className="bg-white p-3 rounded-lg border border-gray-200">
-                <QRCode value={qrUrl} size={220} />
-              </div>
-            </div>
-            <p className="text-[11px] text-gray-400 break-all bg-gray-50 border border-dashed border-gray-200 rounded-md px-2 py-1">
-              {qrUrl}
-            </p>
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={handleCloseQr}
-                className="px-4 py-1.5 text-xs rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                ปิด
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
