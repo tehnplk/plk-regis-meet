@@ -221,15 +221,32 @@ export const EventCards = ({
                     <Clock size={16} className="text-blue-500 shrink-0" />
                     <span>{event.time}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-blue-500 shrink-0" />
-                    <span className="truncate">{event.location}</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={16} className="text-blue-500 shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </div>
+                    <a
+                      href={
+                        event.latitude && event.longitude
+                          ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:text-blue-600 hover:underline ml-6 w-fit"
+                    >
+                      คลิกดูแผนที่
+                    </a>
                   </div>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                    <QRCode value={qrValue} size={80} />
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                      <QRCode value={qrValue} size={80} />
+                    </div>
+                    <span className="text-[10px] text-gray-500 font-medium">scan ลงทะเบียน</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <button
