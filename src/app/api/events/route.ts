@@ -27,7 +27,20 @@ export async function POST(request: Request) {
     return new NextResponse('Invalid payload', { status: 400 });
   }
 
-  const { title, date, endDate, time, location, capacity, description, status } = body as {
+  const {
+    title,
+    date,
+    endDate,
+    time,
+    location,
+    capacity,
+    description,
+    status,
+    latitude,
+    longitude,
+    enableCheckInRadius,
+    checkInRadiusMeters,
+  } = body as {
     title?: string;
     date?: string;
     endDate?: string | null;
@@ -36,10 +49,22 @@ export async function POST(request: Request) {
     capacity?: number | string;
     description?: string;
     status?: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
+    enableCheckInRadius?: boolean;
+    checkInRadiusMeters?: number | string | null;
   };
 
   const numericCapacity =
     typeof capacity === 'string' ? Number(capacity) : capacity;
+  const numericLatitude =
+    typeof latitude === 'string' ? Number(latitude) : latitude ?? null;
+  const numericLongitude =
+    typeof longitude === 'string' ? Number(longitude) : longitude ?? null;
+  const numericCheckInRadius =
+    typeof checkInRadiusMeters === 'string'
+      ? Number(checkInRadiusMeters)
+      : checkInRadiusMeters ?? null;
 
   if (
     !title ||
@@ -56,19 +81,23 @@ export async function POST(request: Request) {
   const eventStatus = status && typeof status === 'string' ? status : 'scheduled';
 
   try {
-    const event = await prisma.event.create({
-      data: {
-        title,
-        date,
-        endDate: endDate ?? null,
-        time,
-        location,
-        registered: 0,
-        capacity: numericCapacity,
-        status: eventStatus,
-        description,
-      },
-    });
+  const event = await prisma.event.create({
+  data: {
+  title,
+  date,
+  endDate: endDate ?? null,
+  time,
+  location,
+  latitude: numericLatitude,
+  longitude: numericLongitude,
+  enableCheckInRadius: Boolean(enableCheckInRadius),
+  checkInRadiusMeters: numericCheckInRadius,
+    registered: 0,
+      capacity: numericCapacity,
+          status: eventStatus,
+          description,
+        },
+      });
 
     return NextResponse.json({ event }, { status: 201 });
   } catch (error) {

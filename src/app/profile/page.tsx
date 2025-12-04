@@ -1,5 +1,7 @@
 import { auth } from "@/authConfig";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage() {
   let session: any = null;
 

@@ -1,0 +1,20 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/auth/healthid/route": "app/api/auth/healthid/route.js",
+  "/api/database/[table]/route": "app/api/database/[table]/route.js",
+  "/api/database/route": "app/api/database/route.js",
+  "/api/events/[id]/participants/route": "app/api/events/[id]/participants/route.js",
+  "/api/events/[id]/route": "app/api/events/[id]/route.js",
+  "/api/events/route": "app/api/events/route.js",
+  "/create-event/page": "app/create-event/page.js",
+  "/database/page": "app/database/page.js",
+  "/page": "app/page.js",
+  "/participants/page": "app/participants/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/register/by-form/page": "app/register/by-form/page.js",
+  "/register/by-provider/page": "app/register/by-provider/page.js",
+  "/register/page": "app/register/page.js",
+  "/test-auth/page": "app/test-auth/page.js"
+}

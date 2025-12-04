@@ -1,0 +1,20 @@
+{
+  "node": {
+    "7f7fd858d3e30762bebdae8d5d656be3fd63e26369": {
+      "workers": {
+        "app/register/page": {
+          "moduleId": "[project]/.next-internal/server/app/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/actions/sign-in.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "providerIdProcess",
+          "filename": "src/app/actions/sign-in.ts"
+        }
+      },
+      "layer": {
+        "app/register/page": "rsc"
+      },
+      "exportedName": "providerIdProcess",
+      "filename": "src/app/actions/sign-in.ts"
+    }
+  },
+  "edge": {}
+}

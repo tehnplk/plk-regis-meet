@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///E:/NextJS/plk-regis-meet/src/app/_components/auth-session-provider.tsx"],"sourcesContent":["'use client';\n\nimport { SessionProvider } from 'next-auth/react';\n\nexport function AuthSessionProvider({ children }: { children: React.ReactNode }) {\n  return <SessionProvider>{children}</SessionProvider>;\n}\n"],"names":[],"mappings":";;;;;AAEA;AAFA;;;AAIO,SAAS,oBAAoB,EAAE,QAAQ,EAAiC;IAC7E,qBAAO,8OAAC,iKAAe;kBAAE;;;;;;AAC3B"}}]
+}

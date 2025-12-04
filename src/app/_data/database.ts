@@ -17,6 +17,10 @@ export interface Event {
   endDate: string | null;
   time: string;
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  enableCheckInRadius?: boolean;
+  checkInRadiusMeters?: number | null;
   registered: number;
   capacity: number;
   status: EventStatus;

@@ -1,0 +1,20 @@
+{
+  "node": {
+    "7f7f617dd873a5b1c21ed12aed69b1e57187856e88": {
+      "workers": {
+        "app/register/by-provider/page": {
+          "moduleId": 69906,
+          "async": false,
+          "exportedName": "providerIdProcess",
+          "filename": "src/app/actions/sign-in.ts"
+        }
+      },
+      "layer": {
+        "app/register/by-provider/page": "rsc"
+      },
+      "exportedName": "providerIdProcess",
+      "filename": "src/app/actions/sign-in.ts"
+    }
+  },
+  "edge": {}
+}

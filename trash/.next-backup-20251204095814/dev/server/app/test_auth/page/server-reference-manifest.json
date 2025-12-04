@@ -1,0 +1,20 @@
+{
+  "node": {
+    "7f7c1389829cf60a846c1b4e34fe31a00839383201": {
+      "workers": {
+        "app/test_auth/page": {
+          "moduleId": "[project]/.next-internal/server/app/test_auth/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/actions/sign-in.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "signInWithHealthId",
+          "filename": "src/app/actions/sign-in.ts"
+        }
+      },
+      "layer": {
+        "app/test_auth/page": "rsc"
+      },
+      "exportedName": "signInWithHealthId",
+      "filename": "src/app/actions/sign-in.ts"
+    }
+  },
+  "edge": {}
+}
