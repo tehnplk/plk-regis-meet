@@ -33,6 +33,8 @@ export function LocationMapModal({
   const leafletMapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const circleRef = useRef<any>(null);
+  const streetLayerRef = useRef<any>(null);
+  const satelliteLayerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!open || !mapContainerRef.current) return;
@@ -84,10 +86,33 @@ export function LocationMapModal({
       const map = L.map(mapContainerRef.current).setView(initialCenter, initialZoom);
       leafletMapRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
+      const streetLayer = L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        },
+      );
+
+      const satelliteLayer = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          attribution:
+            "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+        },
+      );
+
+      const baseLayers = {
+        ถนน: streetLayer,
+        ดาวเทียม: satelliteLayer,
+      };
+
+      streetLayer.addTo(map);
+      L.control.layers(baseLayers, undefined, { position: 'topright' }).addTo(map);
+
+      streetLayerRef.current = streetLayer;
+      satelliteLayerRef.current = satelliteLayer;
 
       map.on("zoomend", () => {
         if (!leafletMapRef.current) return;
@@ -149,6 +174,8 @@ export function LocationMapModal({
         circleRef.current.remove();
         circleRef.current = null;
       }
+      streetLayerRef.current = null;
+      satelliteLayerRef.current = null;
     };
   }, [open]);
 
@@ -206,31 +233,33 @@ export function LocationMapModal({
           </p>
         </div>
         <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between text-xs">
-          <div className="text-gray-600">
-            {selectedLatLng ? (
-              <>
-                <span className="inline-flex items-center gap-1">
-                  <a
-                    href={`https://www.google.com/maps?q=${selectedLatLng.lat},${selectedLatLng.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center"
-                  >
-                    <MapPin className="w-3 h-3" />
-                  </a>
-                  <span>
-                    ({selectedLatLng.lat.toFixed(5)}, {selectedLatLng.lng.toFixed(5)})
+          <div className="text-gray-600 space-y-1">
+            <div>
+              {selectedLatLng ? (
+                <>
+                  <span className="inline-flex items-center gap-1">
+                    <a
+                      href={`https://www.google.com/maps?q=${selectedLatLng.lat},${selectedLatLng.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center"
+                    >
+                      <MapPin className="w-3 h-3" />
+                    </a>
+                    <span>
+                      ({selectedLatLng.lat.toFixed(5)}, {selectedLatLng.lng.toFixed(5)})
+                    </span>
                   </span>
-                </span>
-                {enableCheckInRadius && checkInRadiusMeters && (
-                  <p className="mt-1 text-[10px] text-blue-600">
-                    รัศมีเช็คอินในระยะ {checkInRadiusMeters} เมตร
-                  </p>
-                )}
-              </>
-            ) : (
-              <span>ยังไม่ได้เลือกพิกัด</span>
-            )}
+                  {enableCheckInRadius && checkInRadiusMeters && (
+                    <p className="mt-1 text-[10px] text-blue-600">
+                      รัศมีเช็คอินในระยะ {checkInRadiusMeters} เมตร
+                    </p>
+                  )}
+                </>
+              ) : (
+                <span>ยังไม่ได้เลือกพิกัด</span>
+              )}
+            </div>
           </div>
           <div className="flex gap-2">
             <button
