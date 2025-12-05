@@ -27,7 +27,7 @@ import type {
 import { STATUS_LABELS } from '../_data/database';
 
 const STATUS_STYLES: Record<EventStatus | 'confirmed' | 'pending' | 'cancelled', string> = {
-  scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
+  scheduled: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   open: 'bg-green-100 text-green-700 border-green-200',
   confirmed: 'bg-green-100 text-green-700 border-green-200',
   full: 'bg-orange-100 text-orange-700 border-orange-200',
@@ -105,14 +105,14 @@ export const Header = () => {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 focus:outline-none"
+              className="flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-600 focus:outline-none"
             >
               <ChevronLeft size={18} />
               <span className="hidden sm:inline">ย้อนกลับ</span>
             </button>
           )}
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-2 rounded-lg">
+            <div className="bg-emerald-600 p-2 rounded-lg shadow-sm">
               <CalendarCheck className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-xl font-bold text-gray-800">PLK-HEALTH Events</h1>
@@ -134,7 +134,7 @@ export const Header = () => {
             <button
               type="button"
               onClick={handleLogin}
-              className="px-3 py-1.5 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50 transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-emerald-500 text-emerald-700 hover:bg-emerald-50 transition-colors"
             >
               เข้าระบบ
             </button>
@@ -169,7 +169,7 @@ export const DateDisplay = ({
 
   return (
     <div className="flex items-center gap-2">
-      <Calendar size={iconSize} className="text-blue-500 shrink-0" />
+      <Calendar size={iconSize} className="text-emerald-500 shrink-0" />
       <span>
         {formattedStart}
         {formattedEnd && formattedEnd !== formattedStart ? ` - ${formattedEnd}` : ''}
@@ -189,6 +189,13 @@ export const EventCards = ({
 }) => {
   const pathname = usePathname();
   const showCreateButton = pathname !== '/';
+  const accentPalettes = [
+    { border: 'border-emerald-200', gradient: 'from-emerald-500 via-lime-400 to-green-500' },
+    { border: 'border-lime-200', gradient: 'from-lime-500 via-emerald-400 to-green-500' },
+    { border: 'border-teal-200', gradient: 'from-teal-500 via-emerald-400 to-lime-500' },
+    { border: 'border-amber-200', gradient: 'from-amber-500 via-lime-400 to-emerald-500' },
+    { border: 'border-green-200', gradient: 'from-green-500 via-emerald-400 to-lime-500' },
+  ];
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
@@ -196,7 +203,7 @@ export const EventCards = ({
         <div className="flex justify-end items-center">
           <a
             href="/create-event"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
           >
             <UserPlus size={18} />
             <span>สร้างกิจกรรมใหม่</span>
@@ -205,7 +212,8 @@ export const EventCards = ({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => {
+        {events.map((event, idx) => {
+          const palette = accentPalettes[idx % accentPalettes.length];
           const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
           const progress = Math.min((event.registered / event.capacity) * 100, 100);
           const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
@@ -215,9 +223,9 @@ export const EventCards = ({
           return (
             <div
               key={event.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden flex flex-col"
+              className={`bg-white rounded-xl shadow-sm border ${palette.border} hover:shadow-md transition-shadow overflow-hidden flex flex-col`}
             >
-              <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500" />
+              <div className={`h-1 w-full bg-gradient-to-r ${palette.gradient}`} />
               <div className="p-5 flex-1">
                 <div className="flex justify-between items-start mb-3">
                   <StatusBadge status={event.status} />
@@ -237,12 +245,12 @@ export const EventCards = ({
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-blue-500 shrink-0" />
+                    <Clock size={16} className="text-emerald-500 shrink-0" />
                     <span>{event.time}</span>
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-blue-500 shrink-0" />
+                      <MapPin size={16} className="text-emerald-500 shrink-0" />
                       <span className="truncate">{event.location}</span>
                     </div>
                     <a
@@ -253,7 +261,7 @@ export const EventCards = ({
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-500 hover:text-blue-600 hover:underline ml-6 w-fit"
+                      className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline ml-6 w-fit"
                     >
                       คลิกดูแผนที่
                     </a>
@@ -275,7 +283,7 @@ export const EventCards = ({
                       className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
                         isUnavailable
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
                       }`}
                     >
                       {event.status === 'cancelled' ? (
@@ -298,7 +306,7 @@ export const EventCards = ({
                     <button
                       type="button"
                       onClick={() => onViewParticipants(event)}
-                      className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                      className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors"
                     >
                       ดูรายชื่อ
                     </button>
@@ -317,7 +325,7 @@ export const EventCards = ({
                   <div className="w-24 bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
-                        event.registered >= event.capacity ? 'bg-orange-500' : 'bg-blue-500'
+                        event.registered >= event.capacity ? 'bg-orange-500' : 'bg-emerald-500'
                       }`}
                       style={{ width: `${progress}%` }}
                     />
