@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronDown,
   Clock,
+  FileText,
   MapPin,
   MoreHorizontal,
   Search,
@@ -232,7 +233,10 @@ export const EventCards = ({
                     <MoreHorizontal size={20} />
                   </button>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{event.title}</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-emerald-500 shrink-0" />
+                  <span className="line-clamp-2">{event.title}</span>
+                </h3>
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{event.description}</p>
 
                 <div className="space-y-2 text-sm text-gray-600">
