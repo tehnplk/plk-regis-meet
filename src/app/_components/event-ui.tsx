@@ -399,23 +399,22 @@ export const ParticipantsSection = ({
         <span className="text-gray-900 font-medium truncate max-w-xs">{event.title}</span>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="flex items-start gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">{event.title}</h2>
-              <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  <DateDisplay startDate={event.date} endDate={event.endDate} iconSize={14} />
-                </span>
-                <span className="flex items-center gap-1">
-                  <MapPin size={14} /> {event.location}
-                </span>
-                <StatusBadge status={event.status} />
-              </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">ข้อมูลตาราง</h3>
+        <p className="text-sm text-gray-500">เลือกตารางจากด้านบนแล้วกดปุ่ม view เพื่อดูข้อมูล</p>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-gray-100 pb-4 mb-4">
+          <div>
+            <div className="text-sm text-gray-600 flex items-center gap-2">
+              <MapPin size={14} />
+              <span>{event.location}</span>
+            </div>
+            <div className="mt-1">
+              <StatusBadge status={event.status} />
             </div>
           </div>
-
           <div className="flex gap-3">
             <div className="text-right px-4 py-2 bg-blue-50 rounded-lg border border-blue-100">
               <span className="block text-xs text-blue-600 font-semibold uppercase tracking-wide">ยอดลงทะเบียน</span>
@@ -424,7 +423,7 @@ export const ParticipantsSection = ({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="relative w-full sm:w-80">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -553,6 +552,7 @@ export const RegistrationForm = ({
     .trim();
   const [phoneInput, setPhoneInput] = useState(initialProfile?.phone ?? '');
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -607,12 +607,13 @@ export const RegistrationForm = ({
         throw new Error('Failed to register');
       }
 
-      window.alert(
-        eventTitle
+      const successText =
+        eventTitle && eventTitle.trim()
           ? `ลงทะเบียนสำเร็จสำหรับงาน: ${eventTitle}`
-          : 'ลงทะเบียนสำเร็จ',
-      );
-      onSubmitted?.();
+          : 'ลงทะเบียนสำเร็จ';
+      setToastMessage(successText);
+      setTimeout(() => setToastMessage(null), 1600);
+      setTimeout(() => onSubmitted?.(), 1200);
     } catch (error) {
       console.error(error);
       window.alert('ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง');
