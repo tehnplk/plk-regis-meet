@@ -41,6 +41,8 @@ export default function EventTimelinePage() {
   const today = new Date();
   const [month, setMonth] = useState<number>(today.getMonth());
   const [year, setYear] = useState<number>(today.getFullYear());
+  const [modalDate, setModalDate] = useState<string | null>(null);
+  const [modalEvents, setModalEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -92,24 +94,10 @@ export default function EventTimelinePage() {
 
   const monthTitle = `${TH_MONTHS_FULL[month]} ${year + 543}`;
 
-  const goPrevMonth = () => {
-    setMonth((m) => {
-      if (m === 0) {
-        setYear((y) => y - 1);
-        return 11;
-      }
-      return m - 1;
-    });
-  };
-
-  const goNextMonth = () => {
-    setMonth((m) => {
-      if (m === 11) {
-        setYear((y) => y + 1);
-        return 0;
-      }
-      return m + 1;
-    });
+  const shiftMonth = (delta: number) => {
+    const newDate = new Date(year, month + delta, 1);
+    setYear(newDate.getFullYear());
+    setMonth(newDate.getMonth());
   };
 
   return (
@@ -124,7 +112,7 @@ export default function EventTimelinePage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={goPrevMonth}
+              onClick={() => shiftMonth(-1)}
               className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
               aria-label="เดือนก่อนหน้า"
             >
@@ -133,7 +121,7 @@ export default function EventTimelinePage() {
             <div className="text-sm font-semibold text-gray-800">{monthTitle}</div>
             <button
               type="button"
-              onClick={goNextMonth}
+              onClick={() => shiftMonth(1)}
               className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
               aria-label="เดือนถัดไป"
             >
@@ -177,19 +165,70 @@ export default function EventTimelinePage() {
                     {dayEvents.slice(0, 3).map((evt) => (
                       <div
                         key={evt.id}
-                        className="text-[12px] font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 line-clamp-2"
+                        className="text-[10px] font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 line-clamp-2"
+                        title={evt.title}
                       >
-                        <div className="text-xs font-semibold text-gray-900 leading-snug">
-                          {evt.title}
+                        <div className="flex items-start gap-1.5 text-[11px] font-semibold text-gray-900 leading-snug">
+                          <span className="text-blue-500 leading-none">•</span>
+                          <span className="line-clamp-2">{evt.title}</span>
                         </div>
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
-                      <div className="text-[11px] text-blue-600 font-medium">+{dayEvents.length - 3} more..</div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModalDate(dateKey);
+                          setModalEvents(dayEvents);
+                        }}
+                        className="text-[11px] text-blue-600 font-medium hover:underline text-left"
+                      >
+                        +{dayEvents.length - 3} more..
+                      </button>
                     )}
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {modalDate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar size={16} className="text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-900">{formatThaiDate(modalDate)}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalDate(null);
+                    setModalEvents([]);
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  ปิด
+                </button>
+              </div>
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                {modalEvents.map((evt) => (
+                  <div
+                    key={evt.id}
+                    className="rounded-lg border border-gray-200 bg-slate-50 px-3 py-2"
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="text-blue-500 text-lg leading-none">•</span>
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-semibold text-gray-900">{evt.title}</div>
+                        {evt.time && <div className="text-xs text-gray-600">{evt.time}</div>}
+                        {evt.location && <div className="text-xs text-gray-500 line-clamp-2">{evt.location}</div>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
