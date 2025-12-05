@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { signIn } from '@/authConfig'
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
@@ -65,6 +66,38 @@ export async function GET(request: NextRequest) {
     // Removed sensitive data logging for security
     if (!profileResponse.ok) {
         return NextResponse.json({ error: profileData.error || 'Failed to fetch profile data' }, { status: profileResponse.status });
+    }
+
+    const providerId = (profileData?.data as any)?.provider_id;
+    const titleTh = (profileData?.data as any)?.title_th ?? '';
+    const firstnameTh = (profileData?.data as any)?.firstname_th ?? '';
+    const lastnameTh = (profileData?.data as any)?.lastname_th ?? '';
+    const fullname = `${titleTh}${firstnameTh} ${lastnameTh}`.trim();
+    const organizationRaw = (profileData?.data as any)?.organization ?? [];
+    const organization = Array.isArray(organizationRaw)
+        ? organizationRaw.map((org: any) => ({
+            hcode: org?.hcode ?? null,
+            hname_th: org?.hname_th ?? null,
+        }))
+        : [];
+
+    if (!providerId || !fullname) {
+        return NextResponse.json(
+            { error: 'Missing providerId or fullname from profile data' },
+            { status: 502 },
+        );
+    }
+
+    try {
+        await prisma.loginLog.create({
+            data: {
+                providerId: String(providerId),
+                fullname: String(fullname),
+                organization: organization as any,
+            },
+        });
+    } catch (err) {
+        console.error('[healthid] login log failed', err);
     }
 
     if (!is_auth) {
