@@ -9,6 +9,7 @@ import type { Event } from './_data/database';
 
 export default function HomePage() {
   const router = useRouter();
+
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
