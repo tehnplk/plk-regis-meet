@@ -17,6 +17,7 @@ export default function DatabasePage() {
   const [rows, setRows] = useState<any[] | null>(null);
   const [loadingRows, setLoadingRows] = useState(false);
   const [rowsError, setRowsError] = useState<string | null>(null);
+  const [limitInfo, setLimitInfo] = useState<number | null>(null);
 
   useEffect(() => {
     const loadTables = async () => {
@@ -46,7 +47,7 @@ export default function DatabasePage() {
     setLoadingRows(true);
 
     try {
-      const res = await fetch(`/api/database/${tableName}`);
+      const res = await fetch(`/api/database/${encodeURIComponent(tableName)}`);
       if (!res.ok) {
         if (res.status === 404) {
           setRowsError('ไม่พบตารางที่เลือก');
@@ -58,6 +59,7 @@ export default function DatabasePage() {
       }
       const data = await res.json();
       setRows(data.rows ?? []);
+      setLimitInfo(typeof data.limit === 'number' ? data.limit : null);
     } catch (e) {
       console.error(e);
       setRowsError('ไม่สามารถโหลดข้อมูลตารางได้');
@@ -87,7 +89,7 @@ export default function DatabasePage() {
       content = (
         <div className="border border-gray-200 rounded-lg overflow-hidden">
           <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm text-gray-700 font-medium">
-            SELECT * FROM {selectedTable} (สูงสุด 200 แถว)
+            SELECT * FROM {selectedTable} (สูงสุด {limitInfo ?? 200} แถว)
           </div>
           <div className="overflow-auto">
             <table className="w-full text-left border-collapse text-sm">
@@ -159,10 +161,8 @@ export default function DatabasePage() {
       <Header />
       <main className="max-w-6xl mx-auto p-6 space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Database Viewer</h2>
-          <p className="text-gray-600 text-sm mt-1">
-            หน้านี้ใช้สำหรับดูข้อมูลตัวอย่างแบบ SELECT * จากทุกตารางในฐานข้อมูล (SQLite).
-          </p>
+          <h2 className="text-2xl font-bold text-gray-900">รายการตารางข้อมูล</h2>
+          <p className="text-gray-600 text-sm mt-1">เลือกตารางแล้วกด View เพื่อเปิดดูข้อมูลแบบเต็มจอ</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
@@ -175,16 +175,16 @@ export default function DatabasePage() {
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
-                    <th className="px-3 py-2">ลำดับ</th>
-                    <th className="px-3 py-2">table_name</th>
-                    <th className="px-3 py-2">record</th>
-                    <th className="px-3 py-2 text-right">view</th>
+                    <th className="px-3 py-2 text-center w-14">ลำดับ</th>
+                    <th className="px-3 py-2">ชื่อตาราง</th>
+                    <th className="px-3 py-2 w-28">จำนวนแถว</th>
+                    <th className="px-3 py-2 text-right w-24">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {tables.map((t, index) => (
                     <tr key={t.name} className="hover:bg-blue-50/40">
-                      <td className="px-3 py-2">{index + 1}</td>
+                      <td className="px-3 py-2 text-center">{index + 1}</td>
                       <td className="px-3 py-2 font-mono text-xs">{t.name}</td>
                       <td className="px-3 py-2">{t.count}</td>
                       <td className="px-3 py-2 text-right">
@@ -193,7 +193,7 @@ export default function DatabasePage() {
                           onClick={() => handleView(t.name)}
                           className="px-3 py-1 text-xs rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
                         >
-                          view
+                          View
                         </button>
                       </td>
                     </tr>
