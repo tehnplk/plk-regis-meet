@@ -86,7 +86,7 @@ export const Header = () => {
   const { userName } = useAppSession();
 
   const handleLogin = () => {
-    router.push('/login');
+    router.push('/processProviderId');
   };
 
   const handleLogout = () => {
