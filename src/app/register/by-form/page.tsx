@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import RegisterByFormPageClient from './RegisterByFormPageClient';
 
 type InitialProfile = {
+  titleTh?: string;
   name?: string;
   org?: string;
   position?: string;
@@ -20,8 +21,10 @@ async function getInitialProfileFromCookie(): Promise<InitialProfile | undefined
     const org0 = Array.isArray(profile.organization) ? profile.organization[0] : undefined;
 
     const nameTh: string | undefined = profile.name_th;
+    const titleTh: string | undefined = profile.title_th;
 
     return {
+      titleTh,
       name: nameTh,
       org: (org0?.hname_th as string) ?? undefined,
       position: (org0?.position as string) ?? undefined,

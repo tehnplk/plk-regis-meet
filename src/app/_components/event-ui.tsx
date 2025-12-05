@@ -4,7 +4,6 @@ import { useState, FormEvent } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import QRCode from 'react-qr-code';
-import { useAppSession } from './app-session-context';
 import {
   AlertTriangle,
   Calendar,
@@ -85,7 +84,30 @@ export const Header = () => {
   const pathname = usePathname();
   const showBack = pathname !== '/';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { userName } = useAppSession();
+  const { data: session } = useSession();
+
+  const getUserName = () => {
+    const rawProfile = (session?.user as any)?.profile as string | undefined;
+    if (rawProfile) {
+      try {
+        const profile = JSON.parse(rawProfile) as any;
+        const titleTh = profile?.title_th ?? '';
+        const firstTh = profile?.firstname_th ?? '';
+        const lastTh = profile?.lastname_th ?? '';
+        const nameTh = profile?.name_th ?? '';
+
+        const fullNameParts = [`${titleTh}${firstTh}`.trim(), lastTh].filter(Boolean);
+        const fullName = fullNameParts.length > 0 ? fullNameParts.join(' ').trim() : nameTh;
+        return fullName || null;
+      } catch {
+        return null;
+      }
+    }
+
+    return (session?.user?.name as string | undefined) ?? null;
+  };
+
+  const userName = getUserName();
 
   const handleLogin = () => {
     router.push('/processProviderId');
@@ -518,6 +540,7 @@ export const RegistrationForm = ({
   eventTitle?: string;
   onSubmitted?: () => void;
   initialProfile?: {
+    titleTh?: string;
     name?: string;
     org?: string;
     position?: string;
@@ -525,6 +548,9 @@ export const RegistrationForm = ({
     phone?: string;
   };
 }) => {
+  const defaultName = [initialProfile?.titleTh ?? '', initialProfile?.name ?? '']
+    .join('')
+    .trim();
   const [phoneInput, setPhoneInput] = useState(initialProfile?.phone ?? '');
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
@@ -605,7 +631,7 @@ export const RegistrationForm = ({
           type="text"
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
           placeholder="เช่น นายสมชาย มีมาก"
-          defaultValue={initialProfile?.name}
+          defaultValue={defaultName || undefined}
         />
       </div>
 
