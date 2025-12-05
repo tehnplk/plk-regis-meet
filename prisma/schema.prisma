@@ -89,3 +89,11 @@ model Participant {
   status   String
   regDate  String
 }
+
+model LoginLog {
+  id           Int      @id @default(autoincrement())
+  providerId   String
+  fullname     String
+  organization Json
+  datetime     DateTime @default(now())
+}

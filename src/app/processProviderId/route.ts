@@ -3,7 +3,7 @@ import { providerIdProcess } from '../actions/sign-in';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const landing = searchParams.get('landing') ?? '/profile';
+  const landing = searchParams.get('landing') ?? '/admin';
   const isAuth = searchParams.get('is_auth') ?? 'yes';
 
   const formData = new FormData();
