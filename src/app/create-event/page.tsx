@@ -2,8 +2,9 @@
 
 // TEAM_001: Simple create-event page (placeholder UI for future implementation).
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import type { Event } from '../_data/database';
 import { Header } from '../_components/event-ui';
 import { EventForm } from '../_components/event-form';
@@ -11,6 +12,7 @@ import { EventForm } from '../_components/event-form';
 export default function CreateEventPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status: sessionStatus } = useSession();
   const eventIdParam = searchParams.get('eventId');
   const eventId = eventIdParam ? Number(eventIdParam) : undefined;
   const isEdit = !!eventId;
@@ -20,8 +22,30 @@ export default function CreateEventPage() {
   const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const providerId = useMemo(() => {
+    const rawProfile = (session?.user as any)?.profile as string | undefined;
+    if (!rawProfile) return null;
+    try {
+      const profile = JSON.parse(rawProfile) as any;
+      return profile?.provider_id ?? profile?.providerId ?? null;
+    } catch {
+      return null;
+    }
+  }, [session]);
+
   useEffect(() => {
     if (!isEdit || !eventId) {
+      setLoading(false);
+      return;
+    }
+
+    if (sessionStatus === 'loading') {
+      return;
+    }
+
+    if (!providerId) {
+      setError('ไม่มีสิทธิ์แก้ไขกิจกรรมนี้');
+      setInitialEvent(undefined);
       setLoading(false);
       return;
     }
@@ -38,7 +62,14 @@ export default function CreateEventPage() {
           throw new Error('Failed to load event');
         }
         const data = await res.json();
-        setInitialEvent(data.event as Event);
+        const fetched = data.event as Event;
+        const ownerId = (fetched as any)?.providerIdCreated ?? '';
+        if (String(ownerId) !== String(providerId)) {
+          setError('ไม่มีสิทธิ์แก้ไขกิจกรรมนี้');
+          setInitialEvent(undefined);
+          return;
+        }
+        setInitialEvent(fetched);
         setError(null);
       } catch (e) {
         console.error(e);
@@ -49,7 +80,7 @@ export default function CreateEventPage() {
     };
 
     load();
-  }, [isEdit, eventId]);
+  }, [isEdit, eventId, providerId, sessionStatus]);
 
   const title = isEdit ? 'แก้ไขกิจกรรม' : 'สร้างกิจกรรมใหม่';
   const description = isEdit

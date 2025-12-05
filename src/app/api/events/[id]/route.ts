@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/authConfig';
 
 interface Params {
   id: string;
@@ -42,6 +43,31 @@ export async function PUT(
 
   if (Number.isNaN(id)) {
     return new NextResponse('Invalid id', { status: 400 });
+  }
+
+  const session = await auth();
+  const rawProfile = (session?.user as any)?.profile as string | undefined;
+  let requesterProviderId: string | null = null;
+  if (rawProfile) {
+    try {
+      const profile = JSON.parse(rawProfile) as any;
+      requesterProviderId = profile?.provider_id ?? profile?.providerId ?? null;
+    } catch {
+      requesterProviderId = null;
+    }
+  }
+
+  const existing = await prisma.event.findUnique({
+    where: { id },
+    select: { providerIdCreated: true },
+  });
+
+  if (!existing) {
+    return new NextResponse('Not found', { status: 404 });
+  }
+
+  if (!requesterProviderId || (existing.providerIdCreated ?? '') !== String(requesterProviderId)) {
+    return new NextResponse('Forbidden', { status: 403 });
   }
 
   let body: unknown;
