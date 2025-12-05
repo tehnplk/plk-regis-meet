@@ -30,16 +30,18 @@ export default function AdminEventsPage() {
   }, [session]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const load = async () => {
       try {
-        const res = await fetch('/api/events');
+        const res = await fetch('/api/events', { signal: controller.signal, cache: 'no-store' });
         if (!res.ok) {
           throw new Error('Failed to load events');
         }
         const data = await res.json();
-        setEvents(data.events ?? []);
+        setEvents(Array.isArray(data.events) ? data.events : []);
         setError(null);
       } catch (e) {
+        if ((e as Error).name === 'AbortError') return;
         setError('ไม่สามารถโหลดรายการกิจกรรมได้');
       } finally {
         setLoading(false);
@@ -47,6 +49,7 @@ export default function AdminEventsPage() {
     };
 
     load();
+    return () => controller.abort();
   }, []);
 
   const filteredEvents =

@@ -45,15 +45,17 @@ export default function EventCalendarPage() {
   const [modalEvents, setModalEvents] = useState<Event[]>([]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const load = async () => {
       try {
-        const res = await fetch('/api/events');
+        const res = await fetch('/api/events', { signal: controller.signal, cache: 'no-store' });
         if (!res.ok) {
           throw new Error('Failed to load events');
         }
         const data = await res.json();
-        setEvents(data.events ?? []);
+        setEvents(Array.isArray(data.events) ? data.events : []);
       } catch (e) {
+        if ((e as Error).name === 'AbortError') return;
         setError('ไม่สามารถโหลดไทม์ไลน์กิจกรรมได้');
       } finally {
         setLoading(false);
@@ -61,14 +63,15 @@ export default function EventCalendarPage() {
     };
 
     load();
+    return () => controller.abort();
   }, []);
 
   const eventsByDate = useMemo(() => {
     const map: Record<string, Event[]> = {};
     events.forEach((evt) => {
-      if (!evt.date) return;
-      if (!map[evt.date]) map[evt.date] = [];
-      map[evt.date].push(evt);
+      if (!evt.beginDate) return;
+      if (!map[evt.beginDate]) map[evt.beginDate] = [];
+      map[evt.beginDate].push(evt);
     });
     Object.values(map).forEach((arr) =>
       arr.sort((a, b) => a.id - b.id),
