@@ -57,7 +57,7 @@ model VerificationToken {
 model Event {
   id          Int           @id @default(autoincrement())
   title       String
-  beginDate   String
+  beginDate   String   @default("")
   endDate     String?
   time        String
   location    String
