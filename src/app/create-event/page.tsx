@@ -18,6 +18,7 @@ export default function CreateEventPage() {
   const [initialEvent, setInitialEvent] = useState<Event | undefined>();
   const [loading, setLoading] = useState<boolean>(isEdit);
   const [error, setError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isEdit || !eventId) {
@@ -79,19 +80,27 @@ export default function CreateEventPage() {
               eventId={eventId}
               initialEvent={initialEvent}
               onSuccess={(savedEvent) => {
-                window.alert(
-                  isEdit
-                    ? 'บันทึกการแก้ไขกิจกรรมสำเร็จ'
-                    : 'สร้างกิจกรรมสำเร็จ',
-                );
+                const message = isEdit
+                  ? 'บันทึกการแก้ไขกิจกรรมสำเร็จ'
+                  : 'สร้างกิจกรรมสำเร็จ';
+                setToastMessage(message);
+
                 const target = isEdit ? '/admin' : '/';
-                router.push(target);
+                setTimeout(() => router.push(target), 1200);
               }}
               onCancel={() => router.back()}
             />
           </div>
         )}
       </main>
+
+      {toastMessage && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="rounded-lg bg-emerald-600 text-white shadow-lg px-4 py-3 text-sm font-medium">
+            {toastMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

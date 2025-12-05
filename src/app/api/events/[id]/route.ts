@@ -70,6 +70,7 @@ export async function PUT(
     enableCheckInRadius,
     checkInRadiusMeters,
     docLink,
+    requiredItems,
   } = body as {
     title?: string;
     date?: string;
@@ -84,6 +85,7 @@ export async function PUT(
     enableCheckInRadius?: boolean;
     checkInRadiusMeters?: number | string | null;
     docLink?: string | null;
+    requiredItems?: string | null;
   };
 
   const numericCapacity =
@@ -128,6 +130,7 @@ export async function PUT(
         status: eventStatus,
         description,
         docLink,
+        requiredItems: requiredItems ?? null,
       },
     });
 

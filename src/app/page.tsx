@@ -2,7 +2,7 @@
 
 // TEAM_001: Home page showing event list, split from prototype UI.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header, EventCards } from './_components/event-ui';
 import type { Event } from './_data/database';
@@ -12,6 +12,7 @@ export default function HomePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPast, setShowPast] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -33,6 +34,38 @@ export default function HomePage() {
     load();
   }, []);
 
+  const { upcomingEvents, pastEvents } = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcoming: Event[] = [];
+    const past: Event[] = [];
+
+    events.forEach((event) => {
+      const eventDate = new Date(event.date);
+      if (!Number.isNaN(eventDate.getTime()) && eventDate < today) {
+        past.push(event);
+      } else {
+        upcoming.push(event);
+      }
+    });
+
+    const sortAsc = (a: Event, b: Event) => {
+      const da = new Date(a.date).getTime();
+      const db = new Date(b.date).getTime();
+      if (Number.isNaN(da) || Number.isNaN(db)) return 0;
+      return da - db || a.id - b.id;
+    };
+
+    upcoming.sort(sortAsc);
+    past.sort(sortAsc);
+
+    return { upcomingEvents: upcoming, pastEvents: past };
+  }, [events]);
+
+  const displayedEvents = showPast ? pastEvents : upcomingEvents;
+  const hasNoEvents = !loading && !error && displayedEvents.length === 0;
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-gray-900">
       <Header />
@@ -44,11 +77,46 @@ export default function HomePage() {
           <div className="p-6 max-w-7xl mx-auto text-red-500 text-sm">{error}</div>
         )}
         {!loading && !error && (
-          <EventCards
-            events={events}
-            onRegisterClick={(event) => router.push(`/register?eventId=${event.id}`)}
-            onViewParticipants={(event) => router.push(`/participants?eventId=${event.id}`)}
-          />
+          <>
+            <div className="max-w-7xl mx-auto px-6 pt-4 pb-0 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPast(false)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors mb-[5px] ${
+                    showPast
+                      ? 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700'
+                      : 'bg-blue-600 text-white border-blue-600'
+                  }`}
+                >
+                  กิจกรรมปัจจุบัน ({upcomingEvents.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPast(true)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors mb-[5px] ${
+                    showPast
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700'
+                  }`}
+                >
+                  กิจกรรมที่ผ่านมาแล้ว ({pastEvents.length})
+                </button>
+              </div>
+            </div>
+
+            {hasNoEvents ? (
+              <div className="p-6 max-w-7xl mx-auto text-gray-500 text-sm">
+                {showPast ? 'ยังไม่มีกิจกรรมที่ผ่านมา' : 'ยังไม่มีกิจกรรมที่กำลังจะมาถึง'}
+              </div>
+            ) : (
+              <EventCards
+                events={displayedEvents}
+                onRegisterClick={(event) => router.push(`/register?eventId=${event.id}`)}
+                onViewParticipants={(event) => router.push(`/participants?eventId=${event.id}`)}
+              />
+            )}
+          </>
         )}
       </main>
     </div>

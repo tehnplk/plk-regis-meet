@@ -4,7 +4,10 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const events = await prisma.event.findMany({
-      orderBy: { id: 'asc' },
+      orderBy: [
+        { date: 'asc' },
+        { id: 'asc' },
+      ],
     });
 
     return NextResponse.json({ events });
@@ -41,6 +44,7 @@ export async function POST(request: Request) {
     enableCheckInRadius,
     checkInRadiusMeters,
     docLink,
+    requiredItems,
   } = body as {
     title?: string;
     date?: string;
@@ -55,6 +59,7 @@ export async function POST(request: Request) {
     enableCheckInRadius?: boolean;
     checkInRadiusMeters?: number | string | null;
     docLink?: string | null;
+    requiredItems?: string | null;
   };
 
   const numericCapacity =
@@ -83,24 +88,25 @@ export async function POST(request: Request) {
   const eventStatus = status && typeof status === 'string' ? status : 'scheduled';
 
   try {
-  const event = await prisma.event.create({
-  data: {
-  title,
-  date,
-  endDate: endDate ?? null,
-  time,
-  location,
-  latitude: numericLatitude,
-  longitude: numericLongitude,
-  enableCheckInRadius: Boolean(enableCheckInRadius),
-  checkInRadiusMeters: numericCheckInRadius,
-    registered: 0,
-      capacity: numericCapacity,
-          status: eventStatus,
-          description,
-          docLink,
-        },
-      });
+    const event = await prisma.event.create({
+      data: {
+        title,
+        date,
+        endDate: endDate ?? null,
+        time,
+        location,
+        latitude: numericLatitude,
+        longitude: numericLongitude,
+        enableCheckInRadius: Boolean(enableCheckInRadius),
+        checkInRadiusMeters: numericCheckInRadius,
+        registered: 0,
+        capacity: numericCapacity,
+        status: eventStatus,
+        description,
+        docLink,
+        requiredItems: requiredItems ?? null,
+      },
+    });
 
     return NextResponse.json({ event }, { status: 201 });
   } catch (error) {

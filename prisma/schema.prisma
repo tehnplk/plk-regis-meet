@@ -70,6 +70,7 @@ model Event {
   status      String
   description String
   docLink     String?
+  requiredItems String?      // สิ่งของที่ต้องนำมาเอง
 
   participants Participant[]
 }

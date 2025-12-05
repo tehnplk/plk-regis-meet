@@ -26,6 +26,7 @@ export interface Event {
   status: EventStatus;
   description: string;
   docLink?: string | null;
+  requiredItems?: string | null;
 }
 
 export interface Participant {

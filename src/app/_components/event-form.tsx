@@ -66,6 +66,7 @@ export const EventForm = ({
     const capacityRaw = String(formData.get('capacity') ?? '').trim();
     const description = String(formData.get('description') ?? '').trim();
     const docLinkRaw = String(formData.get('docLink') ?? '').trim();
+    const requiredItemsRaw = String(formData.get('requiredItems') ?? '').trim();
 
     const capacity = Number(capacityRaw);
 
@@ -103,6 +104,7 @@ export const EventForm = ({
         enableCheckInRadius,
         checkInRadiusMeters: effectiveCheckInRadius,
         docLink: docLinkRaw || null,
+        requiredItems: requiredItemsRaw || null,
       };
 
       const isEdit = mode === 'edit' && eventId != null;
@@ -307,6 +309,19 @@ export const EventForm = ({
             defaultValue={initialEvent?.description}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="อธิบายรายละเอียดสั้น ๆ เกี่ยวกับกิจกรรม"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            สิ่งของที่ผู้เข้าร่วมต้องเตรียมมาเอง
+          </label>
+          <textarea
+            name="requiredItems"
+            rows={3}
+            defaultValue={initialEvent?.requiredItems ?? undefined}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            placeholder="เช่น บัตรประชาชน, เสื้อผ้าเปลี่ยน, อุปกรณ์ส่วนตัว"
           />
         </div>
 

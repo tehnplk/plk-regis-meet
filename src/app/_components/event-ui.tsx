@@ -64,6 +64,20 @@ function formatThaiDate(value: string): string {
   return `${dayStr} ${monthName} ${yearShort}`;
 }
 
+function getDaysUntil(dateStr: string): number | null {
+  const parsed = new Date(dateStr);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  const start = new Date(parsed);
+  start.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffMs = start.getTime() - today.getTime();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
 export const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
@@ -195,9 +209,9 @@ export const EventCards = ({
         {events.map((event) => {
           const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
           const progress = Math.min((event.registered / event.capacity) * 100, 100);
-          const qrValue = typeof window !== 'undefined'
-            ? `${window.location.origin}/register?eventId=${event.id}`
-            : `/register?eventId=${event.id}`;
+          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
+          const qrValue = `${baseUrl}/register?eventId=${event.id}`;
+          const daysUntil = getDaysUntil(event.date);
 
           return (
             <div
@@ -217,6 +231,12 @@ export const EventCards = ({
 
                 <div className="space-y-2 text-sm text-gray-600">
                   <DateDisplay startDate={event.date} endDate={event.endDate} />
+                  {daysUntil != null && daysUntil >= 0 && (
+                    <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">
+                      <Clock size={14} className="text-amber-700" />
+                      <span>ถึงกำหนดในอีก {daysUntil} วัน</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <Clock size={16} className="text-blue-500 shrink-0" />
                     <span>{event.time}</span>
