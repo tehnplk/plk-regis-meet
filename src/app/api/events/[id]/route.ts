@@ -58,7 +58,7 @@ export async function PUT(
 
   const {
     title,
-    date,
+    beginDate,
     endDate,
     time,
     location,
@@ -73,7 +73,7 @@ export async function PUT(
     requiredItems,
   } = body as {
     title?: string;
-    date?: string;
+    beginDate?: string;
     endDate?: string | null;
     time?: string;
     location?: string;
@@ -101,7 +101,7 @@ export async function PUT(
 
   if (
     !title ||
-    !date ||
+    !beginDate ||
     !time ||
     !location ||
     numericCapacity == null ||
@@ -118,7 +118,7 @@ export async function PUT(
       where: { id },
       data: {
         title,
-        date,
+        beginDate,
         endDate: endDate ?? null,
         time,
         location,

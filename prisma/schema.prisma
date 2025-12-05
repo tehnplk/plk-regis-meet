@@ -57,7 +57,7 @@ model VerificationToken {
 model Event {
   id          Int           @id @default(autoincrement())
   title       String
-  date        String
+  beginDate   String
   endDate     String?
   time        String
   location    String
@@ -71,6 +71,8 @@ model Event {
   description String
   docLink     String?
   requiredItems String?      // สิ่งของที่ต้องนำมาเอง
+  providerIdCreated String?
+  datetimeCreated   DateTime @default(now())
 
   participants Participant[]
 }

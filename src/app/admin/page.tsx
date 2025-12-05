@@ -90,7 +90,7 @@ export default function AdminEventsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-2 align-top text-gray-700">
-                        <DateDisplay startDate={event.date} endDate={event.endDate} iconSize={14} />
+                        <DateDisplay startDate={event.beginDate} endDate={event.endDate} iconSize={14} />
                       </td>
                       <td className="px-4 py-2 align-top text-gray-700">{event.time}</td>
                       <td className="px-4 py-2 align-top text-gray-700 max-w-xs">

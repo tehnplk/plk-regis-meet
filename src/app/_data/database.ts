@@ -13,7 +13,7 @@ export type ParticipantStatus = "confirmed" | "pending" | "cancelled";
 export interface Event {
   id: number;
   title: string;
-  date: string;
+  beginDate: string;
   endDate: string | null;
   time: string;
   location: string;
@@ -27,6 +27,8 @@ export interface Event {
   description: string;
   docLink?: string | null;
   requiredItems?: string | null;
+  providerIdCreated?: string | null;
+  datetimeCreated?: string | Date;
 }
 
 export interface Participant {

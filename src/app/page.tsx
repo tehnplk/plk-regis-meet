@@ -42,7 +42,7 @@ export default function HomePage() {
     const past: Event[] = [];
 
     events.forEach((event) => {
-      const eventDate = new Date(event.date);
+      const eventDate = new Date(event.beginDate);
       if (!Number.isNaN(eventDate.getTime()) && eventDate < today) {
         past.push(event);
       } else {
@@ -51,8 +51,8 @@ export default function HomePage() {
     });
 
     const sortAsc = (a: Event, b: Event) => {
-      const da = new Date(a.date).getTime();
-      const db = new Date(b.date).getTime();
+      const da = new Date(a.beginDate).getTime();
+      const db = new Date(b.beginDate).getTime();
       if (Number.isNaN(da) || Number.isNaN(db)) return 0;
       return da - db || a.id - b.id;
     };

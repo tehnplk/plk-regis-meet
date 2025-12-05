@@ -44,7 +44,7 @@ export const EventForm = ({
     initialEvent?.checkInRadiusMeters ?? 300,
   );
 
-  const [startDate, setStartDate] = useState(initialEvent?.date ?? '');
+  const [startDate, setStartDate] = useState(initialEvent?.beginDate ?? '');
   const [endDate, setEndDate] = useState(initialEvent?.endDate ?? '');
   const [datePickerTarget, setDatePickerTarget] = useState<'start' | 'end' | null>(null);
 
@@ -59,7 +59,7 @@ export const EventForm = ({
 
     const formData = new FormData(event.currentTarget);
     const title = String(formData.get('title') ?? '').trim();
-    const date = startDate.trim();
+    const beginDate = startDate.trim();
     const endDateRaw = endDate.trim();
     const time = String(formData.get('time') ?? '').trim();
     const location = String(formData.get('location') ?? '').trim();
@@ -77,7 +77,7 @@ export const EventForm = ({
 
     if (
       !title ||
-      !date ||
+      !beginDate ||
       !time ||
       !location ||
       !capacityRaw ||
@@ -93,7 +93,7 @@ export const EventForm = ({
     try {
       const payload = {
         title,
-        date,
+        beginDate,
         endDate: endDateRaw || null,
         time,
         location,
@@ -163,7 +163,7 @@ export const EventForm = ({
             </label>
             <div className="flex gap-2">
               <input
-                name="date"
+                name="beginDate"
                 required
                 type="text"
                 value={startDate}
@@ -222,7 +222,7 @@ export const EventForm = ({
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              สถานที่จัดงาน <span className="text-red-500">*</span>
+              สถานที่จัดกิจกรรม <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
               <input
@@ -232,7 +232,7 @@ export const EventForm = ({
                 value={locationValue}
                 onChange={(e) => setLocationValue(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
-                placeholder="ระบุสถานที่จัดงาน"
+                placeholder="ระบุสถานที่จัดกิจกรรม"
               />
               <button
                 type="button"
@@ -314,14 +314,14 @@ export const EventForm = ({
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            สิ่งของที่ผู้เข้าร่วมต้องเตรียมมาเอง
+            สิ่งของ/อุปกรณ์ที่ต้องเตรียมมาเอง
           </label>
           <textarea
             name="requiredItems"
             rows={3}
             defaultValue={initialEvent?.requiredItems ?? undefined}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
-            placeholder="เช่น บัตรประชาชน, เสื้อผ้าเปลี่ยน, อุปกรณ์ส่วนตัว"
+            placeholder="เช่น คอมพิวเตอร์โน๊ตบุค"
           />
         </div>
 

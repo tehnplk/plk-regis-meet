@@ -258,7 +258,7 @@ export const EventCards = ({
           const progress = Math.min((event.registered / event.capacity) * 100, 100);
           const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
           const qrValue = `${baseUrl}/register?eventId=${event.id}`;
-          const daysUntil = getDaysUntil(event.date);
+          const daysUntil = getDaysUntil(event.beginDate);
 
           return (
             <div
@@ -280,7 +280,7 @@ export const EventCards = ({
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{event.description}</p>
 
                 <div className="space-y-2 text-sm text-gray-600">
-                  <DateDisplay startDate={event.date} endDate={event.endDate} />
+                  <DateDisplay startDate={event.beginDate} endDate={event.endDate} />
                   {daysUntil != null && daysUntil >= 0 && (
                     <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">
                       <Clock size={14} className="text-amber-700" />

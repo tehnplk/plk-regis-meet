@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/authConfig';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
     const events = await prisma.event.findMany({
       orderBy: [
-        { date: 'asc' },
+        { beginDate: 'asc' },
         { id: 'asc' },
       ],
     });
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
 
   const {
     title,
-    date,
+    beginDate,
     endDate,
     time,
     location,
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
     requiredItems,
   } = body as {
     title?: string;
-    date?: string;
+    beginDate?: string;
     endDate?: string | null;
     time?: string;
     location?: string;
@@ -62,6 +63,18 @@ export async function POST(request: Request) {
     requiredItems?: string | null;
   };
 
+  let providerIdCreated: string | null = null;
+  const session = await auth();
+  const rawProfile = (session?.user as any)?.profile as string | undefined;
+  if (rawProfile) {
+    try {
+      const profile = JSON.parse(rawProfile) as any;
+      providerIdCreated = profile?.provider_id ?? profile?.providerId ?? null;
+    } catch {
+      providerIdCreated = null;
+    }
+  }
+
   const numericCapacity =
     typeof capacity === 'string' ? Number(capacity) : capacity;
   const numericLatitude =
@@ -75,7 +88,7 @@ export async function POST(request: Request) {
 
   if (
     !title ||
-    !date ||
+    !beginDate ||
     !time ||
     !location ||
     numericCapacity == null ||
@@ -91,7 +104,7 @@ export async function POST(request: Request) {
     const event = await prisma.event.create({
       data: {
         title,
-        date,
+        beginDate,
         endDate: endDate ?? null,
         time,
         location,
@@ -105,6 +118,8 @@ export async function POST(request: Request) {
         description,
         docLink,
         requiredItems: requiredItems ?? null,
+        providerIdCreated: providerIdCreated ?? null,
+        datetimeCreated: new Date(),
       },
     });
 
