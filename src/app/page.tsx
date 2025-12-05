@@ -104,10 +104,10 @@ export default function HomePage() {
                 </button>
               </div>
               <a
-                href="/event-timeline"
+                href="/calendar"
                 className="px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-200 text-blue-700 bg-white hover:border-blue-400 hover:text-blue-800 shadow-sm"
               >
-                Timeline
+                ปฏิทิน
               </a>
             </div>
 

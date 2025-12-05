@@ -34,7 +34,7 @@ function parseDate(dateStr: string) {
   return d;
 }
 
-export default function EventTimelinePage() {
+export default function EventCalendarPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,13 +154,6 @@ export default function EventTimelinePage() {
             <div className="grid grid-cols-7 gap-2">
               {calendarDays.map(({ day, dateKey }, idx) => {
                 const dayEvents = dateKey ? eventsByDate[dateKey] ?? [] : [];
-                const colorClasses = [
-                  'bg-blue-50 text-blue-800 border-blue-200',
-                  'bg-emerald-50 text-emerald-800 border-emerald-200',
-                  'bg-amber-50 text-amber-800 border-amber-200',
-                  'bg-purple-50 text-purple-800 border-purple-200',
-                  'bg-rose-50 text-rose-800 border-rose-200',
-                ];
                 return (
                   <div
                     key={`${dateKey ?? 'blank'}-${idx}`}
@@ -169,21 +162,18 @@ export default function EventTimelinePage() {
                     } p-2 flex flex-col gap-1`}
                   >
                     <div className="text-sm font-semibold text-gray-800">{day || ''}</div>
-                    {dayEvents.slice(0, 3).map((evt, i) => {
-                      const colorClass = colorClasses[i % colorClasses.length];
-                      return (
-                        <div
-                          key={evt.id}
-                          className={`text-[10px] font-medium rounded px-1.5 py-0.5 line-clamp-2 border ${colorClass}`}
-                          title={evt.title}
-                        >
-                          <div className="flex items-start gap-1.5 text-[11px] font-semibold text-gray-900 leading-snug">
-                            <span className="text-blue-500 leading-none">•</span>
-                            <span className="line-clamp-2">{evt.title}</span>
-                          </div>
+                    {dayEvents.slice(0, 3).map((evt) => (
+                      <div
+                        key={evt.id}
+                        className="text-[10px] font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 line-clamp-2"
+                        title={evt.title}
+                      >
+                        <div className="flex items-start gap-1.5 text-[11px] font-semibold text-gray-900 leading-snug">
+                          <span className="text-blue-500 leading-none">•</span>
+                          <span className="line-clamp-2">{evt.title}</span>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                     {dayEvents.length > 3 && (
                       <button
                         type="button"
