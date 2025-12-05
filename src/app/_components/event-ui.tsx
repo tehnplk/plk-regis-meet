@@ -141,6 +141,24 @@ export const Header = () => {
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm">
+          {session && (
+            <a
+              href="/create-event"
+              className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white font-medium shadow-sm hover:bg-emerald-700 transition-colors"
+            >
+              <UserPlus size={16} />
+              <span>สร้างกิจกรรม</span>
+            </a>
+          )}
+          {session && (
+            <a
+              href="/admin"
+              className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-200 text-emerald-700 bg-white hover:bg-emerald-50 transition-colors"
+            >
+              <CalendarCheck size={16} />
+              <span>รายการกิจกรรม</span>
+            </a>
+          )}
           {userName ? (
             <div className="flex items-center gap-2">
               <span className="max-w-[160px] truncate text-gray-700">{displayName}</span>
