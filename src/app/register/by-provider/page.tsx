@@ -25,7 +25,7 @@ export default async function RegisterByProviderPage({
         {eventId && (
           <p className="text-gray-600 text-sm">eventId: {eventId}</p>
         )}
-        <p className="text-gray-600 text-sm">ใช้ Provider ID เชื่อมกับ Health ID เพื่อดึงข้อมูลผู้สมัคร</p>
+        <p className="text-gray-600 text-sm">ใช้ Provider ID เชื่อมกับ Health ID เพื่อดึงข้อมูลผู้ลงทะเบียน</p>
 
         <form action={providerIdProcess} className="mt-4 space-y-3">
           <input type="hidden" name="landing" value={landing} />
@@ -34,7 +34,7 @@ export default async function RegisterByProviderPage({
             type="submit"
             className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
-            สมัครด้วย Provider ID
+            ลงทะเบียนด้วย Provider ID
           </button>
         </form>
 
@@ -42,7 +42,7 @@ export default async function RegisterByProviderPage({
           href={backHref}
           className="mt-4 inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300"
         >
-          กลับไปเลือกวิธีสมัคร
+          กลับไปเลือกวิธีลงทะเบียน
         </a>
       </main>
     </div>

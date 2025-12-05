@@ -1,0 +1,199 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { Header } from '../_components/event-ui';
+import type { Event } from '../_data/database';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const TH_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const TH_MONTHS_FULL = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+
+function formatThaiDate(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  const isoMatch = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(trimmed);
+  if (!isoMatch) return trimmed;
+
+  const year = Number(isoMatch[1]);
+  const month = Number(isoMatch[2]);
+  const day = Number(isoMatch[3]);
+  if (!year || !month || !day || month < 1 || month > 12) return trimmed;
+
+  const buddhistYear = year + 543;
+  const monthName = TH_MONTHS_SHORT[month - 1];
+  const dayStr = String(day).padStart(2, '0');
+  const yearShort = String(buddhistYear).slice(-2);
+
+  return `${dayStr} ${monthName} ${yearShort}`;
+}
+
+function parseDate(dateStr: string) {
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+export default function EventTimelinePage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const today = new Date();
+  const [month, setMonth] = useState<number>(today.getMonth());
+  const [year, setYear] = useState<number>(today.getFullYear());
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/events');
+        if (!res.ok) {
+          throw new Error('Failed to load events');
+        }
+        const data = await res.json();
+        setEvents(data.events ?? []);
+      } catch (e) {
+        setError('ไม่สามารถโหลดไทม์ไลน์กิจกรรมได้');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const eventsByDate = useMemo(() => {
+    const map: Record<string, Event[]> = {};
+    events.forEach((evt) => {
+      if (!evt.date) return;
+      if (!map[evt.date]) map[evt.date] = [];
+      map[evt.date].push(evt);
+    });
+    Object.values(map).forEach((arr) =>
+      arr.sort((a, b) => a.id - b.id),
+    );
+    return map;
+  }, [events]);
+
+  const calendarDays = useMemo(() => {
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0);
+    const leading = start.getDay(); // Sunday=0
+    const days: { day: number; dateKey: string | null }[] = [];
+
+    for (let i = 0; i < leading; i++) {
+      days.push({ day: 0, dateKey: null });
+    }
+    for (let d = 1; d <= end.getDate(); d++) {
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      days.push({ day: d, dateKey });
+    }
+    return days;
+  }, [month, year]);
+
+  const monthTitle = `${TH_MONTHS_FULL[month]} ${year + 543}`;
+
+  const goPrevMonth = () => {
+    setMonth((m) => {
+      if (m === 0) {
+        setYear((y) => y - 1);
+        return 11;
+      }
+      return m - 1;
+    });
+  };
+
+  const goNextMonth = () => {
+    setMonth((m) => {
+      if (m === 11) {
+        setYear((y) => y + 1);
+        return 0;
+      }
+      return m + 1;
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-gray-900">
+      <Header />
+      <main className="max-w-6xl mx-auto px-6 py-6 space-y-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">ปฏิทินกิจกรรม</h1>
+            <p className="text-sm text-gray-600">ดูวันเริ่มกิจกรรมในรูปแบบปฏิทินเดือน</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={goPrevMonth}
+              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+              aria-label="เดือนก่อนหน้า"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="text-sm font-semibold text-gray-800">{monthTitle}</div>
+            <button
+              type="button"
+              onClick={goNextMonth}
+              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+              aria-label="เดือนถัดไป"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+
+        {loading && <div className="text-sm text-gray-500">กำลังโหลดข้อมูลไทม์ไลน์...</div>}
+
+        {!loading && error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && calendarDays.every((d) => !d.dateKey || !eventsByDate[d.dateKey]) && (
+          <div className="text-sm text-gray-500">ยังไม่มีกิจกรรมในระบบ</div>
+        )}
+
+        {!loading && !error && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+            <div className="grid grid-cols-7 text-xs font-semibold text-gray-500 mb-3">
+              {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map((d) => (
+                <div key={d} className="text-center">
+                  {d}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-2">
+              {calendarDays.map(({ day, dateKey }, idx) => {
+                const dayEvents = dateKey ? eventsByDate[dateKey] ?? [] : [];
+                return (
+                  <div
+                    key={`${dateKey ?? 'blank'}-${idx}`}
+                    className={`min-h-[96px] rounded-lg border ${
+                      day ? 'border-gray-200 bg-slate-50' : 'border-dashed border-gray-100 bg-white'
+                    } p-2 flex flex-col gap-1`}
+                  >
+                    <div className="text-sm font-semibold text-gray-800">{day || ''}</div>
+                    {dayEvents.slice(0, 3).map((evt) => (
+                      <div
+                        key={evt.id}
+                        className="text-[12px] font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 line-clamp-2"
+                      >
+                        <div className="text-xs font-semibold text-gray-900 leading-snug">
+                          {evt.title}
+                        </div>
+                      </div>
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <div className="text-[11px] text-blue-600 font-medium">+{dayEvents.length - 3} more..</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

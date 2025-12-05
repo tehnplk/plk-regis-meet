@@ -103,6 +103,12 @@ export default function HomePage() {
                   กิจกรรมที่ผ่านมาแล้ว ({pastEvents.length})
                 </button>
               </div>
+              <a
+                href="/event-timeline"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-200 text-blue-700 bg-white hover:border-blue-400 hover:text-blue-800 shadow-sm"
+              >
+                Timeline
+              </a>
             </div>
 
             {hasNoEvents ? (

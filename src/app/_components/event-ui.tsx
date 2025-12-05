@@ -7,11 +7,11 @@ import { useAppSession } from './app-session-context';
 import {
   AlertTriangle,
   Calendar,
+  CalendarCheck,
   CheckCircle,
   ChevronLeft,
   ChevronDown,
   Clock,
-  FileText,
   MapPin,
   MoreHorizontal,
   Search,
@@ -113,9 +113,9 @@ export const Header = () => {
           )}
           <div className="flex items-center gap-2">
             <div className="bg-blue-600 p-2 rounded-lg">
-              <FileText className="w-5 h-5 text-white" />
+              <CalendarCheck className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-gray-800">EventReg System</h1>
+            <h1 className="text-xl font-bold text-gray-800">PLK-HEALTH Events</h1>
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm">
@@ -191,10 +191,9 @@ export const EventCards = ({
   const showCreateButton = pathname !== '/';
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <div />
-        {showCreateButton && (
+    <div className="p-6 max-w-7xl mx-auto space-y-4">
+      {showCreateButton && (
+        <div className="flex justify-end items-center">
           <a
             href="/create-event"
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
@@ -202,8 +201,8 @@ export const EventCards = ({
             <UserPlus size={18} />
             <span>สร้างกิจกรรมใหม่</span>
           </a>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((event) => {
