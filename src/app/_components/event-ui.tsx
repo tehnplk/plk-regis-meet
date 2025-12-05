@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import QRCode from 'react-qr-code';
 import { useAppSession } from './app-session-context';
 import {
@@ -90,9 +91,7 @@ export const Header = () => {
   };
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/api/auth/signout?callbackUrl=/';
-    }
+    signOut({ callbackUrl: '/', redirect: true });
   };
 
   const displayName = userName ?? 'ผู้ใช้งาน';
@@ -104,7 +103,7 @@ export const Header = () => {
           {showBack && (
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => router.push('/')}
               className="flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-600 focus:outline-none"
             >
               <ChevronLeft size={18} />
