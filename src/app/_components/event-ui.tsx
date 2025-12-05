@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import QRCode from 'react-qr-code';
 import { useAppSession } from './app-session-context';
 import {
@@ -351,6 +351,17 @@ export const ParticipantsSection = ({
   participants: Participant[];
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { status } = useSession();
+  const isAuthed = status === 'authenticated';
+
+  const maskName = (fullName: string) => {
+    const parts = fullName.trim().split(' ').filter(Boolean);
+    if (parts.length > 1) {
+      parts[parts.length - 1] = '*';
+      return parts.join(' ');
+    }
+    return '*';
+  };
 
   const filteredParticipants = participants.filter(
     (p) =>
@@ -434,17 +445,26 @@ export const ParticipantsSection = ({
                 filteredParticipants.map((participant) => (
                   <tr key={participant.id} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">{participant.name}</div>
+                      <div className="font-medium text-gray-900">
+                        {isAuthed ? participant.name : maskName(participant.name)}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">{participant.org}</div>
                       <div className="text-xs text-gray-500">{participant.position}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-col text-sm text-gray-600">
-                        <span>{participant.email}</span>
-                        <span className="text-gray-400 text-xs">{participant.phone}</span>
-                      </div>
+                      {isAuthed ? (
+                        <div className="flex flex-col text-sm text-gray-600">
+                          <span>{participant.email}</span>
+                          <span className="text-gray-400 text-xs">{participant.phone}</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col text-sm text-gray-600">
+                          <span>*</span>
+                          <span className="text-gray-400 text-xs">*</span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{participant.regDate}</td>
                     <td className="px-6 py-4 text-center">

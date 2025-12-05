@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { auth } from "@/authConfig";
 import { AppSessionProvider } from "./_components/app-session-context";
+import { SessionProvider } from "next-auth/react";
 
-const geistSans = Geist({
+const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = JetBrains_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -65,7 +66,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppSessionProvider userName={userName}>{children}</AppSessionProvider>
+        <SessionProvider>
+          <AppSessionProvider userName={userName}>{children}</AppSessionProvider>
+        </SessionProvider>
       </body>
     </html>
   );
