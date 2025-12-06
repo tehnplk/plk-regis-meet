@@ -87,10 +87,10 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setShowPast(false)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors mb-[5px] ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors mb-[5px] cursor-pointer ${
                     showPast
-                      ? 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300 hover:text-emerald-700'
-                      : 'bg-emerald-600 text-white border-emerald-600'
+                      ? 'bg-white text-gray-700 border-blue-200 hover:border-blue-300 hover:text-blue-700'
+                      : 'bg-blue-600 text-white border-blue-600'
                   }`}
                 >
                   กำลังจะมาถึง ({upcomingEvents.length})
@@ -98,10 +98,10 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setShowPast(true)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors mb-[5px] ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors mb-[5px] cursor-pointer ${
                     showPast
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300 hover:text-emerald-700'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-blue-200 hover:border-blue-300 hover:text-blue-700'
                   }`}
                 >
                   กิจกรรมที่ผ่านมาแล้ว ({pastEvents.length})
@@ -109,7 +109,7 @@ export default function HomePage() {
               </div>
               <a
                 href="/calendar"
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-emerald-200 text-emerald-700 bg-white hover:border-emerald-400 hover:text-emerald-800 shadow-sm"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-emerald-200 text-emerald-700 bg-white hover:border-emerald-400 hover:text-emerald-800 shadow-sm cursor-pointer"
               >
                 ปฏิทิน
               </a>
