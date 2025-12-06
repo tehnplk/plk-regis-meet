@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { MapPin, AlertTriangle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { AlertTriangle, MapPin } from 'lucide-react';
 import LocationMap from '../_components/LocationMap';
 
 // Calculate distance between two coordinates using Haversine formula

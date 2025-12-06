@@ -1,5 +1,6 @@
 import PosterCardClient from './PosterCardClient';
 import { prisma } from '@/lib/prisma';
+import type { EventStatus } from '../_data/database';
 
 type PosterSearchParams = {
   eventId?: string | string[];
@@ -47,7 +48,7 @@ export default async function PosterPage({
           </div>
         )}
 
-        {event && <PosterCardClient event={event} />}
+        {event && <PosterCardClient event={{...event, status: event.status as EventStatus}} />}
       </main>
     </div>
   );

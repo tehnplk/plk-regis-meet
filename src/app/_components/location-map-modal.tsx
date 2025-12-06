@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MapPin, Building2, Navigation } from "lucide-react";
+import { Building2, MapPin, Navigation } from "lucide-react";
 
 type LatLng = {
   lat: number;
@@ -101,7 +101,7 @@ export function LocationMapModal({
         alert(msg);
         setGettingLocation(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
     );
   };
 
@@ -147,7 +147,7 @@ export function LocationMapModal({
         return;
       }
 
-      const defaultCenter: [number, number] = [16.8203, 100.2629];
+      const defaultCenter: [number, number] = [16.8203, 100.2650];
       const initialCenter: [number, number] = selectedLatLng
         ? [selectedLatLng.lat, selectedLatLng.lng]
         : defaultCenter;

@@ -1,17 +1,17 @@
 'use client';
 
-import QRCode from 'react-qr-code';
 import { useEffect, useMemo, useState } from 'react';
+import QRCode from 'react-qr-code';
 import {
   AlertTriangle,
   Clock,
-  MapPin,
-  Users,
-  XCircle,
-  UserPlus,
   FileText,
-  X,
+  MapPin,
   Search,
+  UserPlus,
+  Users,
+  X,
+  XCircle,
 } from 'lucide-react';
 import type { EventStatus, Participant } from '../_data/database';
 import { DateDisplay, StatusBadge } from '../_components/event-ui';
