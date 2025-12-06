@@ -43,6 +43,7 @@ export interface Participant {
   foodType?: 'normal' | 'islam';
   status: ParticipantStatus;
   regDate: string;
+  regTime: string | Date;
 }
 
 export const STATUS_LABELS: Record<EventStatus | ParticipantStatus, string> = {

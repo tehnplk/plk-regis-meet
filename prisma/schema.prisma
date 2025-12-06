@@ -91,6 +91,7 @@ model Participant {
   foodType String?
   status   String
   regDate  String
+  regTime  DateTime           @default(now())
 }
 
 model LoginLog {

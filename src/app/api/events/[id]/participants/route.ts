@@ -66,6 +66,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
           foodType: normalizedFoodType,
           status: 'confirmed',
           regDate,
+          regTime: now,
         },
       }),
       prisma.event.update({

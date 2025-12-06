@@ -139,7 +139,17 @@ export const ParticipantsSection = ({
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{participant.regDate}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {participant.regDate}
+                      {participant.regTime && (
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {new Date(participant.regTime).toLocaleTimeString('th-TH', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-center">
                       <StatusBadge status={participant.status} />
                     </td>

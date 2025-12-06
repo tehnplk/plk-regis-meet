@@ -1,7 +1,7 @@
 'use client';
 
 import QRCode from 'react-qr-code';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   Clock,
@@ -10,8 +10,10 @@ import {
   XCircle,
   UserPlus,
   FileText,
+  X,
+  Search,
 } from 'lucide-react';
-import type { EventStatus } from '../_data/database';
+import type { EventStatus, Participant } from '../_data/database';
 import { DateDisplay, StatusBadge } from '../_components/event-ui';
 
 type PosterEvent = {
@@ -55,26 +57,65 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
   const qrValue = `${baseUrl}/register?eventId=${event.id}`;
   const daysUntil = useMemo(() => getDaysUntil(event.beginDate), [event.beginDate]);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [participantsError, setParticipantsError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    if (!showParticipants) return;
+
+    const load = async () => {
+      setLoadingParticipants(true);
+      try {
+        const res = await fetch(`/api/events/${event.id}`);
+        if (!res.ok) {
+          throw new Error('failed to load participants');
+        }
+        const data = await res.json();
+        setParticipants((data.event?.participants ?? []) as Participant[]);
+        setParticipantsError(null);
+      } catch (err) {
+        console.error('[poster] participants fetch failed', err);
+        setParticipantsError('โหลดรายชื่อไม่สำเร็จ');
+      } finally {
+        setLoadingParticipants(false);
+      }
+    };
+
+    load();
+  }, [event.id, showParticipants]);
+
+  const filteredParticipants = participants.filter((p) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(term) ||
+      p.org.toLowerCase().includes(term) ||
+      (p.email ?? '').toLowerCase().includes(term)
+    );
+  });
 
   return (
-    <article
-      className={`bg-white rounded-xl shadow-sm border ${palette.border} overflow-hidden flex flex-col`}
-    >
-      <div className={`h-1 w-full bg-gradient-to-r ${palette.gradient}`} />
-      <div className="p-5 flex-1">
-        <div className="flex justify-between items-start mb-3">
-          <StatusBadge status={event.status} />
-        </div>
-        <h1 className="text-3xl font-black text-gray-900 mb-3 flex items-center gap-2">
-          <FileText className="w-6 h-6 text-emerald-500 shrink-0" />
-          <span className="line-clamp-2">{event.title}</span>
-        </h1>
-        <p className="text-gray-700 text-base mb-5 whitespace-pre-line">{event.description}</p>
-
-        <div className="space-y-3 text-sm text-gray-700">
-          <div className="text-base font-semibold text-gray-800">
-            <DateDisplay startDate={event.beginDate} endDate={event.endDate} />
+    <>
+      <article
+        className={`bg-white rounded-xl shadow-sm border ${palette.border} overflow-hidden flex flex-col`}
+      >
+        <div className={`h-1 w-full bg-gradient-to-r ${palette.gradient}`} />
+        <div className="p-5 flex-1">
+          <div className="flex justify-between items-start mb-3">
+            <StatusBadge status={event.status} />
           </div>
+          <h1 className="text-3xl font-black text-gray-900 mb-3 flex items-center gap-2">
+            <FileText className="w-6 h-6 text-emerald-500 shrink-0" />
+            <span className="line-clamp-2">{event.title}</span>
+          </h1>
+          <p className="text-gray-700 text-base mb-5 whitespace-pre-line">{event.description}</p>
+
+          <div className="space-y-3 text-sm text-gray-700">
+            <div className="text-base font-semibold text-gray-800">
+              <DateDisplay startDate={event.beginDate} endDate={event.endDate} />
+            </div>
           {daysUntil != null && daysUntil >= 0 && (
             <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">
               <Clock size={14} className="text-amber-700" />
@@ -144,12 +185,13 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
                   : 'ลงทะเบียน'}
               </span>
             </a>
-            <a
-              href={`/participants?eventId=${event.id}`}
-              className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors text-center"
+            <button
+              type="button"
+              onClick={() => setShowParticipants(true)}
+              className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors text-center cursor-pointer"
             >
               ดูรายชื่อ
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -173,5 +215,88 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
         </div>
       </div>
     </article>
+
+    {showParticipants && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[80vh] overflow-hidden">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <div>
+              <p className="text-sm text-gray-500">รายชื่อผู้ลงทะเบียน</p>
+              <p className="text-base font-semibold text-gray-900">
+                {event.title}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowParticipants(false)}
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="p-4 flex flex-col gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="ค้นหาชื่อ หรือ หน่วยงาน..."
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="max-h-[45vh] overflow-y-auto">
+                {loadingParticipants ? (
+                  <div className="p-4 text-sm text-gray-500">กำลังโหลดรายชื่อ...</div>
+                ) : participantsError ? (
+                  <div className="p-4 text-sm text-red-600">{participantsError}</div>
+                ) : filteredParticipants.length === 0 ? (
+                  <div className="p-4 text-sm text-gray-500 flex items-center gap-2">
+                    <Search size={16} className="text-gray-300" />
+                    ไม่พบข้อมูลผู้ลงทะเบียน
+                  </div>
+                ) : (
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                      <tr>
+                        <th className="px-4 py-3 w-12">ลำดับ</th>
+                        <th className="px-4 py-3">ชื่อ-นามสกุล</th>
+                        <th className="px-4 py-3">ตำแหน่ง</th>
+                        <th className="px-4 py-3">หน่วยงาน</th>
+                        <th className="px-4 py-3">เบอร์โทร</th>
+                        <th className="px-4 py-3 text-center">วันที่ลงทะเบียน</th>
+                        <th className="px-4 py-3 text-center">เวลาลงทะเบียน</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {filteredParticipants.map((p, idx) => (
+                        <tr key={p.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
+                          <td className="px-4 py-2 text-gray-900">{p.name}</td>
+                          <td className="px-4 py-2 text-gray-700">{p.position || '-'}</td>
+                          <td className="px-4 py-2 text-gray-700">{p.org || '-'}</td>
+                          <td className="px-4 py-2 text-gray-600">{p.phone || '-'}</td>
+                          <td className="px-4 py-2 text-center text-gray-500 text-xs">{p.regDate || '-'}</td>
+                          <td className="px-4 py-2 text-center text-gray-500 text-xs">
+                            {p.regTime ? new Date(p.regTime).toLocaleTimeString('th-TH', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }) : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
