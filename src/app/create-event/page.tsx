@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react';
 import type { Event } from '../_data/database';
 import { Header } from '../_components/event-ui';
 import { EventForm } from '../_components/event-form';
+import { getJWTToken } from '@/lib/auth';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -55,7 +56,16 @@ export default function CreateEventPage() {
 
     const load = async () => {
       try {
-        const res = await fetch(`/api/events/${eventId}`);
+        const token = await getJWTToken();
+        if (!token) {
+          setError('กรุณาเข้าสู่ระบบใหม่ (token หาย)');
+          setInitialEvent(undefined);
+          return;
+        }
+
+        const res = await fetch(`/api/events/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (res.status === 404) {
           setError('ไม่พบกิจกรรมที่ต้องการ');
           setInitialEvent(undefined);

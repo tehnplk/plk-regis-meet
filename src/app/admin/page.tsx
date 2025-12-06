@@ -138,7 +138,15 @@ export default function AdminEventsPage() {
                     <tr key={event.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 align-top text-gray-700">{event.id}</td>
                       <td className="px-4 py-2 align-top">
-                        <div className="font-medium text-gray-900 line-clamp-2">{event.title}</div>
+                        <a
+                          href={`/poster?eventId=${event.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-700 hover:underline text-left line-clamp-2"
+                          title="เปิดโปสเตอร์กิจกรรม (แท็บใหม่)"
+                        >
+                          {event.title}
+                        </a>
                         <div className="text-xs text-gray-500 line-clamp-2 mt-0.5">
                           {event.description}
                         </div>
