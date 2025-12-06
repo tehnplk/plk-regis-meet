@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Header, RegistrationForm } from '../../_components/event-ui';
 import type { Event } from '../../_data/database';
+import { getJWTToken } from '@/lib/auth';
 
 type InitialProfile = {
   name?: string;
@@ -35,7 +36,13 @@ export default function RegisterByFormPageClient({
 
     const load = async () => {
       try {
-        const res = await fetch(`/api/events/${eventId}`);
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('auth required');
+        }
+        const res = await fetch(`/api/events/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (res.status === 404) {
           setEvent(undefined);
           setError('ไม่พบกิจกรรมที่ต้องการ');
@@ -49,7 +56,7 @@ export default function RegisterByFormPageClient({
         setEvent(data.event as Event);
         setError(null);
       } catch (e) {
-        setError('no data');
+        setError('ไม่สามารถโหลดข้อมูลกิจกรรม (โปรดเข้าสู่ระบบใหม่)');
       } finally {
         setLoading(false);
       }

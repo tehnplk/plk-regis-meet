@@ -18,18 +18,19 @@ export async function GET(
   }
 
   const token = getTokenFromRequest(request);
-  let includeParticipants = false;
-  if (token) {
-    const payload = await verifyToken(token);
-    if (payload) {
-      includeParticipants = true;
-    }
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return new NextResponse('Invalid token', { status: 401 });
   }
 
   try {
     const event = await prisma.event.findUnique({
       where: { id },
-      select: includeParticipants ? {
+      select: {
         id: true,
         title: true,
         beginDate: true,
@@ -50,26 +51,6 @@ export async function GET(
         providerIdCreated: true,
         datetimeCreated: true,
         participants: true,
-      } : {
-        id: true,
-        title: true,
-        beginDate: true,
-        endDate: true,
-        time: true,
-        location: true,
-        latitude: true,
-        longitude: true,
-        enableCheckInRadius: true,
-        checkInRadiusMeters: true,
-        registered: true,
-        capacity: true,
-        status: true,
-        description: true,
-        docLink: true,
-        requiredItems: true,
-        registerMethod: true,
-        providerIdCreated: true,
-        datetimeCreated: true,
       },
     });
 

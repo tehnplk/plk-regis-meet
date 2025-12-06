@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { EventStatus, Participant } from '../_data/database';
 import { DateDisplay, StatusBadge } from '../_components/event-ui';
+import { getJWTToken } from '@/lib/auth';
 
 type PosterEvent = {
   id: number;
@@ -69,7 +70,15 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
     const load = async () => {
       setLoadingParticipants(true);
       try {
-        const res = await fetch(`/api/events/${event.id}`);
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('auth required');
+        }
+        const res = await fetch(`/api/events/${event.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) {
           throw new Error('failed to load participants');
         }
@@ -78,7 +87,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
         setParticipantsError(null);
       } catch (err) {
         console.error('[poster] participants fetch failed', err);
-        setParticipantsError('โหลดรายชื่อไม่สำเร็จ');
+        setParticipantsError('โหลดรายชื่อไม่สำเร็จ (โปรดเข้าสู่ระบบ)');
       } finally {
         setLoadingParticipants(false);
       }
