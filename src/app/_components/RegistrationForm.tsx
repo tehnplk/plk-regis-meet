@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { MapPin, AlertTriangle } from 'lucide-react';
 import { CheckCircle, UserPlus } from 'lucide-react';
+import { getJWTToken } from '@/lib/auth';
 
 // Calculate distance between two coordinates using Haversine formula
 function getDistanceMeters(
@@ -170,10 +171,16 @@ export const RegistrationForm = ({
     }
 
     try {
+      const token = await getJWTToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
       const res = await fetch(`/api/events/${eventId}/participants`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           name,
