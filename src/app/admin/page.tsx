@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header, StatusBadge, DateDisplay } from '../_components/event-ui';
 import type { Event, Participant } from '../_data/database';
+import { getJWTToken } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 
 export default function AdminEventsPage() {
@@ -162,7 +163,16 @@ export default function AdminEventsPage() {
                             setLoadingParticipants(true);
                             setParticipantsError(null);
                             try {
-                              const res = await fetch(`/api/events/${event.id}`);
+                              const token = await getJWTToken();
+                              if (!token) {
+                                throw new Error('Authentication required');
+                              }
+                              
+                              const res = await fetch(`/api/events/${event.id}`, {
+                                headers: {
+                                  'Authorization': `Bearer ${token}`
+                                }
+                              });
                               const data = await res.json();
                               if (!res.ok || !data?.event?.participants) {
                                 throw new Error('ไม่สามารถโหลดรายชื่อได้');

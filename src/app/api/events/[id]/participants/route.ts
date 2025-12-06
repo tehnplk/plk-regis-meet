@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getTokenFromRequest, verifyToken } from '@/lib/jwt';
 
 interface Params {
   id: string;
@@ -11,6 +12,17 @@ export async function POST(request: Request, { params }: { params: Promise<Param
 
   if (Number.isNaN(eventId)) {
     return new NextResponse('Invalid id', { status: 400 });
+  }
+
+  // JWT validation for participant registration
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+  
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return new NextResponse('Invalid token', { status: 401 });
   }
 
   let body: unknown;

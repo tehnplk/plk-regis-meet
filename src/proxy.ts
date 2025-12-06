@@ -13,6 +13,16 @@ export async function proxy(request: any) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }
+
+  // Check JWT for participants endpoints (privacy protection)
+  if ((pathname.match(/^\/api\/events\/\d+\/participants$/) && request.method === 'POST') ||
+      (pathname.match(/^\/api\/events\/\d+$/) && request.method === 'GET')) {
+    
+    const token = getTokenFromRequest(request);
+    if (!token || !(await verifyToken(token))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
   
   // Check JWT for database API (admin only)
   if (pathname.startsWith('/api/database')) {

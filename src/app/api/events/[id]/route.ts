@@ -7,7 +7,7 @@ interface Params {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<Params> },
 ) {
   const resolvedParams = await params;
@@ -17,10 +17,60 @@ export async function GET(
     return new NextResponse('Invalid id', { status: 400 });
   }
 
+  const token = getTokenFromRequest(request);
+  let includeParticipants = false;
+  if (token) {
+    const payload = await verifyToken(token);
+    if (payload) {
+      includeParticipants = true;
+    }
+  }
+
   try {
     const event = await prisma.event.findUnique({
       where: { id },
-      include: { participants: true },
+      select: includeParticipants ? {
+        id: true,
+        title: true,
+        beginDate: true,
+        endDate: true,
+        time: true,
+        location: true,
+        latitude: true,
+        longitude: true,
+        enableCheckInRadius: true,
+        checkInRadiusMeters: true,
+        registered: true,
+        capacity: true,
+        status: true,
+        description: true,
+        docLink: true,
+        requiredItems: true,
+        registerMethod: true,
+        providerIdCreated: true,
+        datetimeCreated: true,
+        participants: true,
+      } : {
+        id: true,
+        title: true,
+        beginDate: true,
+        endDate: true,
+        time: true,
+        location: true,
+        latitude: true,
+        longitude: true,
+        enableCheckInRadius: true,
+        checkInRadiusMeters: true,
+        registered: true,
+        capacity: true,
+        status: true,
+        description: true,
+        docLink: true,
+        requiredItems: true,
+        registerMethod: true,
+        providerIdCreated: true,
+        datetimeCreated: true,
+      },
     });
 
     if (!event) {
