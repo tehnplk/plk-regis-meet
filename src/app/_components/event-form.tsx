@@ -5,6 +5,7 @@ import { MapPin, Calendar } from 'lucide-react';
 import type { Event } from '../_data/database';
 import { LocationMapModal } from './location-map-modal';
 import { DatePickerModal } from './date-picker-modal';
+import { getJWTToken } from '@/lib/auth';
 
 export type EventFormMode = 'create' | 'edit';
 
@@ -92,6 +93,12 @@ export const EventForm = ({
     setSubmitting(true);
 
     try {
+      // Get JWT token
+      const token = await getJWTToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
       const payload = {
         title,
         beginDate,
@@ -117,6 +124,7 @@ export const EventForm = ({
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

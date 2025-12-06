@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/authConfig';
+import { getTokenFromRequest, verifyToken, type JWTPayload } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
@@ -66,16 +66,17 @@ export async function POST(request: Request) {
   };
 
   let providerIdCreated: string | null = null;
-  const session = await auth();
-  const rawProfile = (session?.user as any)?.profile as string | undefined;
-  if (rawProfile) {
-    try {
-      const profile = JSON.parse(rawProfile) as any;
-      providerIdCreated = profile?.provider_id ?? profile?.providerId ?? null;
-    } catch {
-      providerIdCreated = null;
-    }
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
   }
+  
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return new NextResponse('Invalid token', { status: 401 });
+  }
+  
+  providerIdCreated = payload.providerId ?? null;
 
   const numericCapacity =
     typeof capacity === 'string' ? Number(capacity) : capacity;

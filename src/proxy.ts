@@ -1,10 +1,30 @@
 import { NextResponse } from "next/server";
+import { verifyToken, getTokenFromRequest } from "./lib/jwt";
 
-// Middleware currently disabled: allow all routes without auth checks.
-export default function middleware() {
+export async function proxy(request: any) {
+  const { pathname } = request.nextUrl;
+  
+  // Check JWT for protected API routes
+  if (pathname.startsWith('/api/events') && 
+      ['POST', 'PUT', 'DELETE'].includes(request.method)) {
+    
+    const token = getTokenFromRequest(request);
+    if (!token || !(await verifyToken(token))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+  
+  // Check JWT for database API (admin only)
+  if (pathname.startsWith('/api/database')) {
+    const token = getTokenFromRequest(request);
+    if (!token || !(await verifyToken(token))) {
+      return NextResponse.json({ error: 'Admin required' }, { status: 403 });
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/authConfig';
+import { getTokenFromRequest, verifyToken, type JWTPayload } from '@/lib/jwt';
 
 interface Params {
   id: string;
@@ -45,17 +45,17 @@ export async function PUT(
     return new NextResponse('Invalid id', { status: 400 });
   }
 
-  const session = await auth();
-  const rawProfile = (session?.user as any)?.profile as string | undefined;
-  let requesterProviderId: string | null = null;
-  if (rawProfile) {
-    try {
-      const profile = JSON.parse(rawProfile) as any;
-      requesterProviderId = profile?.provider_id ?? profile?.providerId ?? null;
-    } catch {
-      requesterProviderId = null;
-    }
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
   }
+  
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return new NextResponse('Invalid token', { status: 401 });
+  }
+  
+  const requesterProviderId = payload.providerId ?? null;
 
   const existing = await prisma.event.findUnique({
     where: { id },
