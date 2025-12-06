@@ -47,6 +47,7 @@ export const EventForm = ({
   const [startDate, setStartDate] = useState(initialEvent?.beginDate ?? '');
   const [endDate, setEndDate] = useState(initialEvent?.endDate ?? '');
   const [datePickerTarget, setDatePickerTarget] = useState<'start' | 'end' | null>(null);
+  const [registerMethod, setRegisterMethod] = useState<number>(initialEvent?.registerMethod ?? 3);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -105,6 +106,7 @@ export const EventForm = ({
         checkInRadiusMeters: effectiveCheckInRadius,
         docLink: docLinkRaw || null,
         requiredItems: requiredItemsRaw || null,
+        registerMethod,
       };
 
       const isEdit = mode === 'edit' && eventId != null;
@@ -310,6 +312,47 @@ export const EventForm = ({
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="อธิบายรายละเอียดสั้น ๆ เกี่ยวกับกิจกรรม"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            วิธีการลงทะเบียนที่อนุญาต <span className="text-red-500">*</span>
+          </label>
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="registerMethod"
+                value={3}
+                checked={registerMethod === 3}
+                onChange={() => setRegisterMethod(3)}
+                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">ทั้งสองแบบ (Provider ID และแบบฟอร์ม)</span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="registerMethod"
+                value={1}
+                checked={registerMethod === 1}
+                onChange={() => setRegisterMethod(1)}
+                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">เฉพาะ Provider ID</span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="registerMethod"
+                value={2}
+                checked={registerMethod === 2}
+                onChange={() => setRegisterMethod(2)}
+                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">เฉพาะแบบฟอร์ม</span>
+            </label>
+          </div>
         </div>
 
         <div>

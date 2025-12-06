@@ -27,6 +27,7 @@ export interface Event {
   description: string;
   docLink?: string | null;
   requiredItems?: string | null;
+  registerMethod?: number; // 1=provider_id only, 2=form only, 3=both
   providerIdCreated?: string | null;
   datetimeCreated?: string | Date;
 }

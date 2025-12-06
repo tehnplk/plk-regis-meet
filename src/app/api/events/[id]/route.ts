@@ -97,6 +97,7 @@ export async function PUT(
     checkInRadiusMeters,
     docLink,
     requiredItems,
+    registerMethod,
   } = body as {
     title?: string;
     beginDate?: string;
@@ -112,6 +113,7 @@ export async function PUT(
     checkInRadiusMeters?: number | string | null;
     docLink?: string | null;
     requiredItems?: string | null;
+    registerMethod?: number;
   };
 
   const numericCapacity =
@@ -157,6 +159,7 @@ export async function PUT(
         description,
         docLink,
         requiredItems: requiredItems ?? null,
+        registerMethod: registerMethod ?? 3,
       },
     });
 
