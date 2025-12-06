@@ -3,12 +3,10 @@
 // TEAM_001: Home page showing event list, split from prototype UI.
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Header, EventCards } from './_components/event-ui';
 import type { Event } from './_data/database';
 
 export default function HomePage() {
-  const router = useRouter();
 
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,11 +118,7 @@ export default function HomePage() {
                 {showPast ? 'ยังไม่มีกิจกรรมที่ผ่านมา' : 'ยังไม่มีกิจกรรมที่กำลังจะมาถึง'}
               </div>
             ) : (
-              <EventCards
-                events={displayedEvents}
-                onRegisterClick={(event) => router.push(`/register?eventId=${event.id}`)}
-                onViewParticipants={(event) => router.push(`/participants?eventId=${event.id}`)}
-              />
+              <EventCards events={displayedEvents} />
             )}
           </>
         )}

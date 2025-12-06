@@ -3,14 +3,12 @@
 import { usePathname } from 'next/navigation';
 import QRCode from 'react-qr-code';
 import {
-  AlertTriangle,
   Clock,
   FileText,
   MapPin,
   Maximize,
   UserPlus,
   Users,
-  XCircle,
 } from 'lucide-react';
 import type { Event } from '../_data/database';
 import { getDaysUntil } from './event-utils';
@@ -27,12 +25,8 @@ const accentPalettes = [
 
 export const EventCards = ({
   events,
-  onRegisterClick,
-  onViewParticipants,
 }: {
   events: Event[];
-  onRegisterClick: (event: Event) => void;
-  onViewParticipants: (event: Event) => void;
 }) => {
   const pathname = usePathname();
   const showCreateButton = pathname !== '/';
@@ -54,7 +48,6 @@ export const EventCards = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((event, idx) => {
           const palette = accentPalettes[idx % accentPalettes.length];
-          const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
           const progress = Math.min((event.registered / event.capacity) * 100, 100);
           const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
           const qrValue = `${baseUrl}/register?eventId=${event.id}`;
@@ -117,49 +110,22 @@ export const EventCards = ({
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                      <QRCode value={qrValue} size={80} />
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <div className="bg-white p-1.5 rounded-lg border border-gray-200 shadow-sm">
+                      <QRCode value={qrValue} size={60} />
                     </div>
-                    <span className="text-[10px] text-gray-500 font-medium">scan ลงทะเบียน</span>
+                    <span className="text-[9px] text-gray-500 font-medium">scan ลงทะเบียน</span>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      type="button"
-                      disabled={isUnavailable}
-                      onClick={() => onRegisterClick(event)}
-                      className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer ${
-                        isUnavailable
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                      }`}
-                    >
-                      {event.status === 'cancelled' ? (
-                        <XCircle size={16} />
-                      ) : event.status === 'postponed' ? (
-                        <AlertTriangle size={16} />
-                      ) : (
-                        <UserPlus size={16} />
-                      )}
-                      <span>
-                        {event.status === 'cancelled'
-                          ? 'ยกเลิกแล้ว'
-                          : event.status === 'postponed'
-                          ? 'เลื่อน'
-                          : event.status === 'full'
-                          ? 'เต็ม'
-                          : 'ลงทะเบียน'}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onViewParticipants(event)}
-                      className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors cursor-pointer"
-                    >
-                      ดูรายชื่อ
-                    </button>
-                  </div>
+                  <a
+                    href={`/poster?eventId=${event.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors shadow-sm bg-emerald-600 text-white hover:bg-emerald-700 flex-1 cursor-pointer"
+                  >
+                    <FileText size={16} />
+                    <span>รายละเอียด</span>
+                  </a>
                 </div>
               </div>
 
