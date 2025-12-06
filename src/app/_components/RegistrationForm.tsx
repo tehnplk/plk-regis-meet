@@ -215,7 +215,7 @@ export const RegistrationForm = ({
         <div className="bg-blue-50 p-3 rounded-lg flex items-start gap-2 text-xs text-blue-700 mt-2 sm:mt-0">
           <CheckCircle size={14} className="mt-0.5 shrink-0" />
           <p>
-            กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน ระบบจะส่งอีเมลยืนยันการลงทะเบียนไปยังอีเมลที่ท่านระบุไว้
+            กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน
           </p>
         </div>
       </div>
