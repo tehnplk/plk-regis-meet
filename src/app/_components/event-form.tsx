@@ -41,7 +41,7 @@ export const EventForm = ({
     Boolean(initialEvent?.enableCheckInRadius),
   );
   const [checkInRadius, setCheckInRadius] = useState<number | null>(
-    initialEvent?.checkInRadiusMeters ?? 300,
+    initialEvent?.checkInRadiusMeters ?? 100,
   );
 
   const [startDate, setStartDate] = useState(initialEvent?.beginDate ?? '');

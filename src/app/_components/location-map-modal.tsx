@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { MapPin } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { MapPin, Building2, Navigation } from "lucide-react";
 
 type LatLng = {
   lat: number;
   lng: number;
 };
+
+// Preset locations
+const PRESET_LOCATIONS = [
+  { name: "สสจ.พล ตึกเก่า", lat: 16.81750, lng: 100.26082 },
+  { name: "สสจ.พล ตึกใหม่", lat: 16.81737, lng: 100.26137 },
+];
 
 interface LocationMapModalProps {
   open: boolean;
@@ -35,6 +41,69 @@ export function LocationMapModal({
   const circleRef = useRef<any>(null);
   const streetLayerRef = useRef<any>(null);
   const satelliteLayerRef = useRef<any>(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
+
+  // Function to set marker and pan map to a location
+  const setLocationOnMap = (lat: number, lng: number, zoomLevel: number = 18) => {
+    onChangeLatLng({ lat, lng });
+
+    if (leafletMapRef.current) {
+      const L = (window as any).L;
+      if (L) {
+        const pos = L.latLng(lat, lng);
+        if (markerRef.current) {
+          markerRef.current.setLatLng(pos);
+        } else {
+          markerRef.current = L.marker(pos, { draggable: true }).addTo(leafletMapRef.current);
+          markerRef.current.on("dragend", (event: any) => {
+            const p = event.target.getLatLng();
+            onChangeLatLng({ lat: p.lat, lng: p.lng });
+            if (leafletMapRef.current) {
+              leafletMapRef.current.panTo(p);
+            }
+          });
+        }
+        leafletMapRef.current.setView(pos, zoomLevel);
+
+        // Switch to satellite layer
+        if (streetLayerRef.current && satelliteLayerRef.current) {
+          if (leafletMapRef.current.hasLayer(streetLayerRef.current)) {
+            leafletMapRef.current.removeLayer(streetLayerRef.current);
+          }
+          if (!leafletMapRef.current.hasLayer(satelliteLayerRef.current)) {
+            satelliteLayerRef.current.addTo(leafletMapRef.current);
+          }
+        }
+      }
+    }
+  };
+
+  // Get current location using Geolocation API
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง");
+      return;
+    }
+
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocationOnMap(position.coords.latitude, position.coords.longitude, 17);
+        setGettingLocation(false);
+      },
+      (error) => {
+        let msg = "ไม่สามารถระบุตำแหน่งได้";
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = "กรุณาอนุญาตการเข้าถึงตำแหน่ง";
+        } else if (error.code === error.TIMEOUT) {
+          msg = "หมดเวลาในการระบุตำแหน่ง";
+        }
+        alert(msg);
+        setGettingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   useEffect(() => {
     if (!open || !mapContainerRef.current) return;
@@ -223,13 +292,40 @@ export function LocationMapModal({
             ปิด
           </button>
         </div>
-        <div className="p-4">
+        <div className="p-4 space-y-3">
+          {/* Preset location buttons */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-gray-500 flex items-center gap-1">
+              <Building2 className="w-3 h-3" />
+              เลือกสถานที่:
+            </span>
+            {PRESET_LOCATIONS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => setLocationOnMap(preset.lat, preset.lng)}
+                className="px-2.5 py-1 text-xs rounded-md border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+              >
+                {preset.name}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={getCurrentLocation}
+              disabled={gettingLocation}
+              className="px-2.5 py-1 text-xs rounded-md border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+            >
+              <Navigation className={`w-3 h-3 ${gettingLocation ? 'animate-pulse' : ''}`} />
+              {gettingLocation ? 'กำลังค้นหา...' : 'ตำแหน่งปัจจุบัน'}
+            </button>
+          </div>
+
           <div
             ref={mapContainerRef}
             className="w-full h-80 sm:h-[480px] rounded-lg overflow-hidden border border-gray-200"
           />
           <p className="mt-2 text-xs text-gray-500">
-            คลิกบนแผนที่เพื่อเลือกพิกัด จากนั้นกด "ใช้พิกัดนี้" ระบบจะเติมพิกัดเข้าไปในช่องสถานที่จัดงาน
+            คลิกบนแผนที่เพื่อเลือกพิกัด หรือเลือกจากปุ่มสถานที่ด้านบน จากนั้นกด "ใช้พิกัดนี้"
           </p>
         </div>
         <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between text-xs">
@@ -249,6 +345,11 @@ export function LocationMapModal({
                     <span>
                       ({selectedLatLng.lat.toFixed(5)}, {selectedLatLng.lng.toFixed(5)})
                     </span>
+                    {zoom !== null && (
+                      <span className="text-gray-400 ml-1">
+                        | zoom: {zoom}
+                      </span>
+                    )}
                   </span>
                   {enableCheckInRadius && checkInRadiusMeters && (
                     <p className="mt-1 text-[10px] text-blue-600">
