@@ -101,6 +101,10 @@ export default function RegisterByFormPageClient({
           eventTitle={event?.title}
           initialProfile={initialProfile}
           onSubmitted={() => router.push('/')}
+          enableCheckInRadius={event?.enableCheckInRadius}
+          checkInRadiusMeters={event?.checkInRadiusMeters}
+          eventLatitude={event?.latitude}
+          eventLongitude={event?.longitude}
         />
       </main>
     </div>

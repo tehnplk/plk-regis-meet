@@ -1,13 +1,38 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
+import { MapPin, AlertTriangle } from 'lucide-react';
 import { CheckCircle, UserPlus } from 'lucide-react';
+
+// Calculate distance between two coordinates using Haversine formula
+function getDistanceMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371000; // Earth's radius in meters
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export const RegistrationForm = ({
   eventId,
   eventTitle,
   onSubmitted,
   initialProfile,
+  enableCheckInRadius,
+  checkInRadiusMeters,
+  eventLatitude,
+  eventLongitude,
 }: {
   eventId?: number;
   eventTitle?: string;
@@ -20,6 +45,10 @@ export const RegistrationForm = ({
     email?: string;
     phone?: string;
   };
+  enableCheckInRadius?: boolean;
+  checkInRadiusMeters?: number | null;
+  eventLatitude?: number | null;
+  eventLongitude?: number | null;
 }) => {
   const defaultName = [initialProfile?.titleTh ?? '', initialProfile?.name ?? '']
     .join('')
@@ -27,6 +56,85 @@ export const RegistrationForm = ({
   const [phoneInput, setPhoneInput] = useState(initialProfile?.phone ?? '');
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Geolocation state
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isWithinRadius, setIsWithinRadius] = useState<boolean>(true);
+  const [distanceFromEvent, setDistanceFromEvent] = useState<number | null>(null);
+  const [loadingLocation, setLoadingLocation] = useState<boolean>(false);
+
+  // Check if radius restriction is enabled
+  const radiusRestrictionEnabled =
+    enableCheckInRadius &&
+    checkInRadiusMeters &&
+    checkInRadiusMeters > 0 &&
+    eventLatitude !== null &&
+    eventLatitude !== undefined &&
+    eventLongitude !== null &&
+    eventLongitude !== undefined;
+
+  // Get user location on mount if radius restriction is enabled
+  useEffect(() => {
+    if (!radiusRestrictionEnabled) {
+      setIsWithinRadius(true);
+      return;
+    }
+
+    setLoadingLocation(true);
+
+    if (!navigator.geolocation) {
+      setLocationError('เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง');
+      setIsWithinRadius(false);
+      setLoadingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+        setUserLocation({ lat: userLat, lng: userLng });
+
+        const distance = getDistanceMeters(
+          userLat,
+          userLng,
+          eventLatitude!,
+          eventLongitude!
+        );
+        setDistanceFromEvent(Math.round(distance));
+
+        if (distance <= checkInRadiusMeters!) {
+          setIsWithinRadius(true);
+          setLocationError(null);
+        } else {
+          setIsWithinRadius(false);
+          setLocationError(
+            `คุณอยู่นอกรัศมีที่กำหนด (${Math.round(distance)} เมตร จากสถานที่จัด, รัศมีที่อนุญาต: ${checkInRadiusMeters} เมตร)`
+          );
+        }
+        setLoadingLocation(false);
+      },
+      (error) => {
+        let msg = 'ไม่สามารถระบุตำแหน่งได้';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = 'กรุณาอนุญาตการเข้าถึงตำแหน่งเพื่อลงทะเบียน';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = 'ไม่สามารถระบุตำแหน่งได้ในขณะนี้';
+        } else if (error.code === error.TIMEOUT) {
+          msg = 'หมดเวลาในการระบุตำแหน่ง';
+        }
+        setLocationError(msg);
+        setIsWithinRadius(false);
+        setLoadingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }, [radiusRestrictionEnabled, eventLatitude, eventLongitude, checkInRadiusMeters]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -220,10 +328,39 @@ export const RegistrationForm = ({
         </div>
       </div>
 
+      {/* Location warning for radius restriction */}
+      {radiusRestrictionEnabled && (
+        <div className="space-y-2">
+          {loadingLocation && (
+            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex items-center gap-2 text-sm text-yellow-800">
+              <MapPin size={16} className="animate-pulse" />
+              <span>กำลังตรวจสอบตำแหน่งของคุณ...</span>
+            </div>
+          )}
+          {!loadingLocation && isWithinRadius && userLocation && (
+            <div className="bg-green-50 border border-green-200 p-3 rounded-lg flex items-center gap-2 text-sm text-green-800">
+              <MapPin size={16} />
+              <span>คุณอยู่ในรัศมีที่กำหนด ({distanceFromEvent} เมตร จากสถานที่จัด)</span>
+            </div>
+          )}
+          {!loadingLocation && !isWithinRadius && locationError && (
+            <div className="bg-red-50 border border-red-300 p-3 rounded-lg flex items-start gap-2 text-sm text-red-700">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <span>{locationError}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="pt-2 flex gap-3 justify-end border-t border-gray-100 mt-6">
         <button
           type="submit"
-          className="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm hover:shadow transition-all flex items-center gap-2 text-sm cursor-pointer"
+          disabled={!!(radiusRestrictionEnabled && (!isWithinRadius || loadingLocation))}
+          className={`px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2 text-sm ${
+            radiusRestrictionEnabled && (!isWithinRadius || loadingLocation)
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'text-white bg-blue-600 hover:bg-blue-700 hover:shadow cursor-pointer'
+          }`}
         >
           <UserPlus size={18} />
           ยืนยันการลงทะเบียน
