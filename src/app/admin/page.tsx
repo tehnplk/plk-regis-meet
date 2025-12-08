@@ -6,7 +6,7 @@ import { Header, StatusBadge, DateDisplay } from '../_components/event-ui';
 import type { Event, Participant } from '../_data/database';
 import { getJWTToken } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
-import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Pencil, Trash2, X, MapPin, Clock3, FileText, AlignLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function AdminEventsPage() {
@@ -213,60 +213,82 @@ export default function AdminEventsPage() {
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ชื่อกิจกรรม</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">วันที่</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">เวลา</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">สถานที่</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลงทะเบียนแล้ว</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ชื่อกิจกรรม</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">ลงทะเบียนแล้ว</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">รายชื่อ</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">สถานะ</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลิงก์เอกสาร</th>
-                  <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500">การจัดการ</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">เอกสาร</th>
+                  <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {filteredEvents.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                       {showOnlyMine ? 'ไม่มีกิจกรรมที่คุณสร้าง' : 'ยังไม่มีกิจกรรมในระบบ'}
                     </td>
                   </tr>
                 ) : (
                   filteredEvents.map((event) => (
                     <tr key={event.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 align-top text-gray-700">{event.id}</td>
+                      <td className="px-4 py-2 align-top text-gray-700 whitespace-nowrap">
+                        <DateDisplay startDate={event.beginDate} endDate={event.beginDate} iconSize={14} />
+                      </td>
                       <td className="px-4 py-2 align-top">
                         <a
                           href={`/poster?eventId=${event.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-medium text-blue-700 hover:underline text-left line-clamp-2"
+                          className="font-medium text-blue-700 hover:underline text-left flex items-center gap-1"
                           title="เปิดโปสเตอร์กิจกรรม (แท็บใหม่)"
                         >
-                          {event.title}
+                          <FileText className="h-3 w-3 text-emerald-500 shrink-0" />
+                          <span className="line-clamp-2">{event.title}</span>
                         </a>
-                        <div className="text-xs text-gray-500 line-clamp-2 mt-0.5">
-                          {event.description}
+                        <div className="text-xs text-gray-500 mt-0.5 flex items-start gap-1">
+                          <AlignLeft className="mt-0.5 h-3 w-3 text-gray-400 shrink-0" />
+                          <span className="max-w-md whitespace-normal break-words">{event.description}</span>
+                        </div>
+                        <div className="mt-0.5 space-y-0 text-[11px] text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="mt-0.5 h-3 w-3 text-emerald-500" />
+                            <div>
+                              <span className="whitespace-normal break-words">{event.location}</span>
+                              {event.latitude != null && event.longitude != null && (
+                                <a
+                                  href={`https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="ml-1 text-[10px] text-blue-600 hover:underline"
+                                >
+                                  [แผนที่]
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-1">
+                            <DateDisplay startDate={event.beginDate} endDate={event.endDate} iconSize={12} />
+                            {event.time && (
+                              <span className="inline-flex items-center gap-1">
+                                <Clock3 className="h-3 w-3 text-emerald-500" />
+                                <span>{event.time}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-2 align-top text-gray-700">
-                        <DateDisplay startDate={event.beginDate} endDate={event.endDate} iconSize={14} />
+                        <span className="font-semibold text-gray-900">{event.registered}</span>
+                        <span className="text-gray-500"> / {event.capacity}</span>
                       </td>
-                      <td className="px-4 py-2 align-top text-gray-700">{event.time}</td>
-                      <td className="px-4 py-2 align-top text-gray-700 max-w-xs">
-                        <div className="truncate" title={event.location}>
-                          {event.location}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 align-top text-gray-700">
+                      <td className="px-4 py-2 align-top">
                         <button
                           type="button"
                           onClick={() => openParticipantsModal(event)}
-                          className="inline-flex items-center gap-1 font-semibold text-gray-900 hover:text-emerald-700 focus:outline-none"
-                          title="ดูรายชื่อผู้ลงทะเบียน"
+                          className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 focus:outline-none"
                         >
-                          <span>{event.registered}</span>
-                          <span className="text-gray-500 font-normal"> / {event.capacity}</span>
+                          รายชื่อ
                         </button>
                       </td>
                       <td className="px-4 py-2 align-top">
@@ -310,7 +332,7 @@ export default function AdminEventsPage() {
                                   : 'แก้ไขได้เฉพาะผู้สร้าง (provider_id ตรงกัน)'
                               }
                             >
-                              แก้ไข
+                              <Pencil className="w-4 h-4" />
                             </button>
                           );
                         })()}
