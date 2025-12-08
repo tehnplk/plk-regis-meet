@@ -10,16 +10,22 @@ export async function getJWTToken(): Promise<string | null> {
       return stored;
     }
 
-    // Fetch new token from API
-    const res = await fetch('/api/auth/token');
-    if (res.ok) {
+    // Fetch new token from API (prefer session token, fallback to public token)
+    const tryFetch = async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) return null;
       const data = await res.json();
-      const token = data.token;
-      
-      // Store in localStorage
+      const token = data.token as string | undefined;
+      if (!token) return null;
       localStorage.setItem(TOKEN_KEY, token);
       return token;
-    }
+    };
+
+    const sessionToken = await tryFetch('/api/auth/token');
+    if (sessionToken) return sessionToken;
+
+    const publicToken = await tryFetch('/api/auth/public-token');
+    if (publicToken) return publicToken;
     
     return null;
   } catch (error) {

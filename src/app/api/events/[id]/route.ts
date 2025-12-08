@@ -17,6 +17,7 @@ export async function GET(
     return new NextResponse('Invalid id', { status: 400 });
   }
 
+  // Require any valid JWT (session or public) to mitigate scraping; public token is allowed.
   const token = getTokenFromRequest(request);
   if (!token) {
     return new NextResponse('Unauthorized', { status: 401 });

@@ -6,6 +6,8 @@ import { Header, StatusBadge, DateDisplay } from '../_components/event-ui';
 import type { Event, Participant } from '../_data/database';
 import { getJWTToken } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
+import { Check, Pencil, Trash2, X } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function AdminEventsPage() {
   const router = useRouter();
@@ -18,6 +20,8 @@ export default function AdminEventsPage() {
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [participantsError, setParticipantsError] = useState<string | null>(null);
   const [showOnlyMine, setShowOnlyMine] = useState(false);
+  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+  const [savingParticipant, setSavingParticipant] = useState(false);
 
   const providerId = useMemo(() => {
     const rawProfile = (session?.user as any)?.profile as string | undefined;
@@ -51,7 +55,102 @@ export default function AdminEventsPage() {
 
     load();
     return () => controller.abort();
-  }, []);
+  }, [session]);
+
+  const loadParticipants = async (eventId: number) => {
+    setLoadingParticipants(true);
+    setParticipantsError(null);
+    try {
+      const token = await getJWTToken();
+      if (!token) {
+        throw new Error('ต้องมี JWT เพื่อดึงรายชื่อ');
+      }
+      const res = await fetch(`/api/events/${eventId}/participants`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        throw new Error('ไม่สามารถโหลดรายชื่อได้');
+      }
+      const data = await res.json();
+      setParticipants(data.participants as Participant[]);
+    } catch (e: any) {
+      setParticipants([]);
+      setParticipantsError(e?.message ?? 'ไม่สามารถโหลดรายชื่อได้');
+    } finally {
+      setLoadingParticipants(false);
+    }
+  };
+
+  const openParticipantsModal = async (event: Event) => {
+    setSelectedEvent(event);
+    setShowParticipantsModal(true);
+    await loadParticipants(event.id);
+  };
+
+
+  const updateParticipant = async (updated: Partial<Participant> & { id: number }) => {
+    if (!selectedEvent) return;
+    setSavingParticipant(true);
+    setParticipantsError(null);
+    try {
+      const token = await getJWTToken();
+      if (!token) throw new Error('ต้องมี JWT');
+
+      const body = {
+        participantId: updated.id,
+        name: updated.name,
+        org: updated.org,
+        position: updated.position,
+        email: updated.email,
+        phone: updated.phone,
+        foodType: updated.foodType,
+        status: updated.status,
+      };
+
+      const res = await fetch(`/api/events/${selectedEvent.id}/participants`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        throw new Error('บันทึกไม่สำเร็จ');
+      }
+      await loadParticipants(selectedEvent.id);
+    } catch (e: any) {
+      setParticipantsError(e?.message ?? 'บันทึกไม่สำเร็จ');
+    } finally {
+      setSavingParticipant(false);
+    }
+  };
+
+  const deleteParticipant = async (participantId: number) => {
+    if (!selectedEvent) return;
+    setSavingParticipant(true);
+    setParticipantsError(null);
+    try {
+      const token = await getJWTToken();
+      if (!token) throw new Error('ต้องมี JWT');
+      const res = await fetch(`/api/events/${selectedEvent.id}/participants`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ participantId }),
+      });
+      if (!res.ok) {
+        throw new Error('ลบไม่สำเร็จ');
+      }
+      await loadParticipants(selectedEvent.id);
+    } catch (e: any) {
+      setParticipantsError(e?.message ?? 'ลบไม่สำเร็จ');
+    } finally {
+      setSavingParticipant(false);
+    }
+  };
 
   const filteredEvents =
     showOnlyMine && providerId
@@ -119,7 +218,7 @@ export default function AdminEventsPage() {
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">วันที่</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">เวลา</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">สถานที่</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลงทะเบียนแล้ว / ทั้งหมด</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลงทะเบียนแล้ว (x/n)</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">รายชื่อ</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">สถานะ</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลิงก์เอกสาร</th>
@@ -161,38 +260,13 @@ export default function AdminEventsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-2 align-top text-gray-700">
-                        {event.registered} / {event.capacity}
+                        <span className="font-semibold text-gray-900">{event.registered}</span>
+                        <span className="text-gray-500"> / {event.capacity}</span>
                       </td>
                       <td className="px-4 py-2 align-top">
                         <button
                           type="button"
-                          onClick={async () => {
-                            setSelectedEvent(event);
-                            setLoadingParticipants(true);
-                            setParticipantsError(null);
-                            try {
-                              const token = await getJWTToken();
-                              if (!token) {
-                                throw new Error('Authentication required');
-                              }
-                              
-                              const res = await fetch(`/api/events/${event.id}`, {
-                                headers: {
-                                  'Authorization': `Bearer ${token}`
-                                }
-                              });
-                              const data = await res.json();
-                              if (!res.ok || !data?.event?.participants) {
-                                throw new Error('ไม่สามารถโหลดรายชื่อได้');
-                              }
-                              setParticipants(data.event.participants as Participant[]);
-                            } catch (e: any) {
-                              setParticipants([]);
-                              setParticipantsError(e?.message ?? 'ไม่สามารถโหลดรายชื่อได้');
-                            } finally {
-                              setLoadingParticipants(false);
-                            }
-                          }}
+                          onClick={() => openParticipantsModal(event)}
                           className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-500 text-emerald-700 hover:bg-emerald-50"
                         >
                           ดูรายชื่อ
@@ -253,110 +327,311 @@ export default function AdminEventsPage() {
         )}
       </main>
 
-      {selectedEvent && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-stretch md:items-center justify-center">
-          <div className="bg-white w-full h-full md:h-[90vh] md:w-[90vw] rounded-none md:rounded-2xl shadow-xl flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">รายชื่อผู้เข้าร่วม</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {selectedEvent.title} (ID: {selectedEvent.id})
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const headers = ['name', 'org', 'position', 'email', 'phone', 'status', 'regDate', 'foodType'];
-                    const csv = [
-                      headers.join(','),
-                      ...participants.map((p) =>
-                        [
-                          p.name,
-                          p.org,
-                          p.position,
-                          p.email,
-                          p.phone,
-                          p.status,
-                          p.regDate,
-                          (p as any).foodType ?? '',
-                        ]
-                          .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`)
-                          .join(','),
-                      ),
-                    ].join('\n');
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `participants-${selectedEvent.id}.csv`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50"
-                  disabled={loadingParticipants || participants.length === 0}
-                >
-                  Export CSV
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedEvent(null);
-                    setParticipants([]);
-                    setParticipantsError(null);
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                >
-                  ปิด
-                </button>
-              </div>
-            </div>
+      <ParticipantsModal
+        open={showParticipantsModal}
+        onClose={() => {
+          setShowParticipantsModal(false);
+          setSelectedEvent(null);
+          setParticipants([]);
+          setParticipantsError(null);
+        }}
+        event={selectedEvent}
+        participants={participants}
+        loading={loadingParticipants}
+        error={participantsError}
+        onUpdate={updateParticipant}
+        onDelete={deleteParticipant}
+        saving={savingParticipant}
+      />
+    </div>
+  );
+}
 
-            <div className="flex-1 overflow-auto p-4">
-              {loadingParticipants && <p className="text-sm text-gray-600">กำลังโหลดรายชื่อ...</p>}
-              {participantsError && <p className="text-sm text-red-600">{participantsError}</p>}
-              {!loadingParticipants && !participantsError && (
-                <div className="overflow-auto border border-gray-200 rounded-lg">
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-3 py-2">ชื่อ-นามสกุล</th>
-                        <th className="px-3 py-2">หน่วยงาน</th>
-                        <th className="px-3 py-2">ตำแหน่ง</th>
-                        <th className="px-3 py-2">อีเมล</th>
-                        <th className="px-3 py-2">โทร</th>
-                        <th className="px-3 py-2">สถานะ</th>
-                        <th className="px-3 py-2">ลงทะเบียน</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {participants.length === 0 ? (
-                        <tr>
-                          <td colSpan={7} className="px-3 py-4 text-center text-gray-500">
-                            ไม่พบรายชื่อผู้เข้าร่วม
-                          </td>
-                        </tr>
-                      ) : (
-                        participants.map((p) => (
-                          <tr key={p.id} className="hover:bg-gray-50">
-                            <td className="px-3 py-2">{p.name}</td>
-                            <td className="px-3 py-2">{p.org}</td>
-                            <td className="px-3 py-2">{p.position}</td>
-                            <td className="px-3 py-2">{p.email}</td>
-                            <td className="px-3 py-2">{p.phone}</td>
-                            <td className="px-3 py-2">{p.status}</td>
-                            <td className="px-3 py-2">{p.regDate}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+// Participants modal UI
+function ParticipantsModal({
+  open,
+  onClose,
+  event,
+  participants,
+  loading,
+  error,
+  onUpdate,
+  onDelete,
+  saving,
+}: {
+  open: boolean;
+  onClose: () => void;
+  event: Event | null;
+  participants: Participant[];
+  loading: boolean;
+  error: string | null;
+  onUpdate: (p: Partial<Participant> & { id: number }) => Promise<void> | void;
+  onDelete: (id: number) => void;
+  saving: boolean;
+}) {
+  if (!open || !event) return null;
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draft, setDraft] = useState<Partial<Participant>>({});
+  const FOOD_LABELS: Record<string, string> = {
+    normal: 'ทั่วไป',
+    islam: 'อิสลาม',
+  };
+
+  const startEdit = (p: Participant) => {
+    setEditingId(p.id);
+    setDraft({ ...p });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDraft({});
+  };
+
+  const handleFieldChange = (field: keyof Participant, value: string) => {
+    setDraft((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    await onUpdate({ id: editingId, ...draft });
+    cancelEdit();
+  };
+
+  const confirmDelete = async (id: number) => {
+    try {
+      const result = await Swal.fire({
+        title: 'ยืนยันการลบ',
+        text: 'ต้องการลบผู้เข้าร่วมคนนี้หรือไม่?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ลบ',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#dc2626',
+      });
+      if (!result.isConfirmed) return;
+    } catch {
+      const ok = typeof window !== 'undefined' && window.confirm('ต้องการลบผู้เข้าร่วมคนนี้หรือไม่?');
+      if (!ok) return;
+    }
+
+    onDelete(id);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 py-6 overflow-auto">
+      <div className="w-full max-w-6xl bg-white rounded-xl shadow-2xl border border-gray-200 p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-500">รายชื่อผู้เข้าร่วม</p>
+            <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+            >
+              ปิด
+            </button>
           </div>
         </div>
-      )}
+
+        {error && <div className="text-sm text-red-600">{error}</div>}
+
+          <div className="border border-gray-200 rounded-lg overflow-hidden mt-3">
+            <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 flex items-center justify-between">
+              รายชื่อ ({participants.length})
+            </div>
+            <div className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200">
+              <div className="flex items-center gap-2">
+                <div className="w-14 text-center">ลำดับ</div>
+                <div className="flex-1">ชื่อ-สกุล / ตำแหน่ง</div>
+                <div className="w-48">หน่วยงาน</div>
+                <div className="w-48">โทรศัพท์ / อีเมล</div>
+                <div className="w-24 text-center">อาหาร</div>
+                <div className="w-24 text-center">สถานะ</div>
+                <div className="w-28 text-right">การจัดการ</div>
+              </div>
+            </div>
+            <div className="max-h-[420px] overflow-auto divide-y divide-gray-100">
+              {loading ? (
+              <div className="p-3 text-sm text-gray-500">กำลังโหลด...</div>
+            ) : participants.length === 0 ? (
+              <div className="p-3 text-sm text-gray-500">ยังไม่มีผู้เข้าร่วม</div>
+            ) : (
+              [...participants]
+                .slice()
+                .sort((a, b) => {
+                  const toTs = (p: Participant) => {
+                    const date = p.regDate ? new Date(p.regDate as any) : null;
+                    const time =
+                      p.regTime instanceof Date
+                        ? p.regTime
+                        : p.regTime
+                        ? new Date(`${p.regDate} ${p.regTime}`)
+                        : null;
+                    const ts = time?.getTime() ?? date?.getTime() ?? 0;
+                    return Number.isNaN(ts) ? 0 : ts;
+                  };
+                  return toTs(a) - toTs(b);
+                })
+                .map((p, idx) => {
+                  const isEditing = editingId === p.id;
+                  const current = isEditing ? { ...p, ...draft } : p;
+                  return (
+                    <div key={p.id} className="p-3 text-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="w-14 text-center pt-1 text-gray-700">{idx + 1}</div>
+
+                        <div className="flex-1 space-y-1">
+                          <div className="font-semibold text-gray-900">
+                            {isEditing ? (
+                              <input
+                                className="w-full rounded-lg border border-gray-300 px-2 py-1 text-sm"
+                                value={current.name}
+                                onChange={(e) => handleFieldChange('name', e.target.value)}
+                              />
+                            ) : (
+                              current.name
+                            )}
+                          </div>
+                          <div className="text-gray-700 text-sm">
+                            {isEditing ? (
+                              <input
+                                className="w-full rounded-lg border border-gray-300 px-2 py-1 text-sm"
+                                value={current.position}
+                                onChange={(e) => handleFieldChange('position', e.target.value)}
+                              />
+                            ) : (
+                              current.position || '-'
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="w-48 text-sm text-gray-700">
+                          {isEditing ? (
+                            <input
+                              className="w-full rounded-lg border border-gray-300 px-2 py-1 text-sm"
+                              value={current.org}
+                              onChange={(e) => handleFieldChange('org', e.target.value)}
+                            />
+                          ) : (
+                            current.org || '-'
+                          )}
+                        </div>
+
+                        <div className="w-48 space-y-1 text-xs text-gray-700">
+                          <div>
+                            {isEditing ? (
+                              <input
+                                className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs"
+                                value={current.phone}
+                                onChange={(e) => handleFieldChange('phone', e.target.value)}
+                              />
+                            ) : (
+                              current.phone || '-'
+                            )}
+                          </div>
+                          <div>
+                            {isEditing ? (
+                              <input
+                                className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs"
+                                value={current.email}
+                                onChange={(e) => handleFieldChange('email', e.target.value)}
+                              />
+                            ) : (
+                              current.email || '-'
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="w-24 text-xs text-gray-700 text-center">
+                          {isEditing ? (
+                            <select
+                              className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs"
+                              value={current.foodType ?? 'normal'}
+                              onChange={(e) => handleFieldChange('foodType', e.target.value)}
+                            >
+                              <option value="normal">ทั่วไป</option>
+                              <option value="islam">อิสลาม</option>
+                            </select>
+                          ) : (
+                            FOOD_LABELS[current.foodType ?? ''] ?? '-'
+                          )}
+                        </div>
+
+                        <div className="w-24 text-xs text-gray-700 text-center">
+                          {isEditing ? (
+                            <select
+                              className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs"
+                              value={current.status}
+                              onChange={(e) => handleFieldChange('status', e.target.value)}
+                            >
+                              <option value="confirmed">confirmed</option>
+                              <option value="pending">pending</option>
+                              <option value="cancelled">cancelled</option>
+                            </select>
+                          ) : (
+                            current.status
+                          )}
+                        </div>
+
+                        <div className="w-28 flex items-start justify-end gap-2 text-xs">
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-md border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 text-emerald-700"
+                                disabled={saving}
+                                onClick={handleSave}
+                                title="บันทึก"
+                                aria-label="บันทึก"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
+                                onClick={cancelEdit}
+                                title="ยกเลิก"
+                                aria-label="ยกเลิก"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              className="p-1.5 rounded-md border border-gray-200 hover:border-blue-200 hover:bg-blue-50 text-blue-600"
+                              onClick={() => startEdit(p)}
+                              title="แก้ไข"
+                              aria-label="แก้ไข"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+                          {!isEditing && (
+                            <button
+                              type="button"
+                              className="p-1.5 rounded-md border border-gray-200 hover:border-red-200 hover:bg-red-50 text-red-600"
+                              onClick={() => void confirmDelete(p.id)}
+                              disabled={saving}
+                              title="ลบ"
+                              aria-label="ลบ"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -72,7 +72,8 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
       try {
         const token = await getJWTToken();
         if (!token) {
-          throw new Error('auth required');
+          setParticipantsError('ต้องเข้าสู่ระบบเพื่อดูรายชื่อผู้เข้าร่วม');
+          return;
         }
         const res = await fetch(`/api/events/${event.id}`, {
           headers: {
