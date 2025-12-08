@@ -218,8 +218,7 @@ export default function AdminEventsPage() {
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">วันที่</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">เวลา</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">สถานที่</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลงทะเบียนแล้ว (x/n)</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">รายชื่อ</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลงทะเบียนแล้ว</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">สถานะ</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">ลิงก์เอกสาร</th>
                   <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500">การจัดการ</th>
@@ -260,16 +259,14 @@ export default function AdminEventsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-2 align-top text-gray-700">
-                        <span className="font-semibold text-gray-900">{event.registered}</span>
-                        <span className="text-gray-500"> / {event.capacity}</span>
-                      </td>
-                      <td className="px-4 py-2 align-top">
                         <button
                           type="button"
                           onClick={() => openParticipantsModal(event)}
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                          className="inline-flex items-center gap-1 font-semibold text-gray-900 hover:text-emerald-700 focus:outline-none"
+                          title="ดูรายชื่อผู้ลงทะเบียน"
                         >
-                          ดูรายชื่อ
+                          <span>{event.registered}</span>
+                          <span className="text-gray-500 font-normal"> / {event.capacity}</span>
                         </button>
                       </td>
                       <td className="px-4 py-2 align-top">
