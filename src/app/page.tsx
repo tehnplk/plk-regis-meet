@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Header, EventCards } from './_components/event-ui';
 import type { Event } from './_data/database';
+import { getJWTToken } from '@/lib/auth';
 
 export default function HomePage() {
 
@@ -17,7 +18,17 @@ export default function HomePage() {
     const controller = new AbortController();
     const load = async () => {
       try {
-        const res = await fetch('/api/events', { signal: controller.signal, cache: 'no-store' });
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('Missing JWT token');
+        }
+        const res = await fetch('/api/events', {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) {
           throw new Error('Failed to load events');
         }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Header } from '../_components/event-ui';
+import { getJWTToken } from '@/lib/auth';
 
 interface TableSummary {
   name: string;
@@ -22,7 +23,15 @@ export default function DatabasePage() {
   useEffect(() => {
     const loadTables = async () => {
       try {
-        const res = await fetch('/api/database');
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('Missing JWT token');
+        }
+        const res = await fetch('/api/database', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) {
           throw new Error('Failed to load tables');
         }
@@ -47,7 +56,15 @@ export default function DatabasePage() {
     setLoadingRows(true);
 
     try {
-      const res = await fetch(`/api/database/${encodeURIComponent(tableName)}`);
+      const token = await getJWTToken();
+      if (!token) {
+        throw new Error('Missing JWT token');
+      }
+      const res = await fetch(`/api/database/${encodeURIComponent(tableName)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) {
         if (res.status === 404) {
           setRowsError('ไม่พบตารางที่เลือก');

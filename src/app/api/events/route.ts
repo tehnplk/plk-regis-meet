@@ -2,7 +2,18 @@ import { NextResponse } from 'next/server';
 import { getTokenFromRequest, verifyToken, type JWTPayload } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Require any valid JWT (session or public) so that all API endpoints are consistently protected.
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return new NextResponse('Invalid token', { status: 401 });
+  }
+
   try {
     const events = await prisma.event.findMany({
       orderBy: [

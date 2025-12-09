@@ -69,7 +69,7 @@ export const Header = () => {
         <div className="flex items-center gap-4 text-sm">
           {session && (
             <a
-              href="/create-event"
+              href="/admin/create-event"
               className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white font-medium shadow-sm hover:bg-emerald-700 transition-colors cursor-pointer"
             >
               <UserPlus size={16} />

@@ -1,12 +1,9 @@
-import type { NextRequest } from 'next/server';
-import { proxy } from './src/proxy';
+import { auth } from '@/authConfig';
 
-export async function middleware(request: NextRequest) {
-  return proxy(request);
-}
+// Use NextAuth middleware only for admin routes. All API routes remain
+// decoupled and rely solely on JWT for authorization.
+export default auth;
 
 export const config = {
-  matcher: ['/api/:path*'],
-  // Use Node.js runtime because jwt verification uses `jose`.
-  runtime: 'nodejs',
+  matcher: ['/admin/:path*'],
 };

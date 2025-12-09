@@ -39,7 +39,17 @@ export default function AdminEventsPage() {
     const controller = new AbortController();
     const load = async () => {
       try {
-        const res = await fetch('/api/events', { signal: controller.signal, cache: 'no-store' });
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('ต้องมี JWT');
+        }
+        const res = await fetch('/api/events', {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) {
           throw new Error('Failed to load events');
         }
@@ -319,7 +329,7 @@ export default function AdminEventsPage() {
                               type="button"
                               onClick={() => {
                                 if (!isOwner) return;
-                                router.push(`/create-event?eventId=${event.id}`);
+                                router.push(`/admin/create-event?eventId=${event.id}`);
                               }}
                               disabled={!isOwner}
                               className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${

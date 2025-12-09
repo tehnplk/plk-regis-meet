@@ -98,7 +98,15 @@ export async function PUT(
     return new NextResponse('Not found', { status: 404 });
   }
 
-  if (!requesterProviderId || (existing.providerIdCreated ?? '') !== String(requesterProviderId)) {
+  // Require a real providerId for all edits (public token cannot edit)
+  if (!requesterProviderId) {
+    return new NextResponse('Forbidden', { status: 403 });
+  }
+
+  const existingOwner = existing.providerIdCreated;
+
+  // If an owner is already set and does not match the requester, forbid edit
+  if (existingOwner && existingOwner !== String(requesterProviderId)) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
@@ -192,6 +200,8 @@ export async function PUT(
         docLink,
         requiredItems: requiredItems ?? null,
         registerMethod: registerMethod ?? 3,
+        // If this event did not yet have an owner, claim it for the current provider
+        ...(existingOwner ? {} : { providerIdCreated: String(requesterProviderId) }),
       },
     });
 

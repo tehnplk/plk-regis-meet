@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getTokenFromRequest, verifyToken } from '@/lib/jwt';
 
 interface TableInfo {
   name: string;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Require JWT for database inspection endpoints to avoid unauthenticated scraping.
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return new NextResponse('Invalid token', { status: 401 });
+  }
   try {
     // ดึงรายชื่อตารางจาก SQLite (ยกเว้นระบบ)
     const tables = (await prisma.$queryRaw<

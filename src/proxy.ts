@@ -1,40 +1,33 @@
 import { NextResponse } from "next/server";
-import { verifyToken, getTokenFromRequest } from "./lib/jwt";
+import { auth } from "./authConfig";
+
+// Proxy is responsible only for protecting page routes (not API).
+// Concept:
+// 1) ทุก API endpoint ปกป้องด้วย JWT ภายใน route handler เอง
+// 2) page route ที่อยู่ภายใต้ /admin/* ต้องผ่าน NextAuth credential
+// 3) ไม่เอา user authentication (NextAuth) ไปยุ่งกับ API
 
 export async function proxy(request: any) {
   const { pathname } = request.nextUrl;
-  
-  // Check JWT for protected API routes
-  if (pathname.startsWith('/api/events') && 
-      ['POST', 'PUT', 'DELETE'].includes(request.method)) {
-    
-    const token = getTokenFromRequest(request);
-    if (!token || !(await verifyToken(token))) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  }
 
-  // Check JWT for participants endpoints (privacy protection)
-  if ((pathname.match(/^\/api\/events\/\d+\/participants$/) && request.method === 'POST') ||
-      (pathname.match(/^\/api\/events\/\d+$/) && request.method === 'GET')) {
-    
-    const token = getTokenFromRequest(request);
-    if (!token || !(await verifyToken(token))) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  }
-  
-  // Check JWT for database API (admin only)
-  if (pathname.startsWith('/api/database')) {
-    const token = getTokenFromRequest(request);
-    if (!token || !(await verifyToken(token))) {
-      return NextResponse.json({ error: 'Admin required' }, { status: 403 });
+  // Protect admin pages using NextAuth session
+  if (pathname.startsWith('/admin')) {
+    const session = await auth();
+
+    if (!session?.user) {
+      // ถ้าไม่มี session ให้ redirect ไป flow login (processProviderId)
+      const url = new URL('/processProviderId', request.nextUrl);
+      // ส่ง landing กลับมาเพื่อให้ login เสร็จแล้วกลับเข้าหน้าเดิมได้
+      url.searchParams.set('landing', pathname + request.nextUrl.search);
+      url.searchParams.set('is_auth', 'yes');
+      return NextResponse.redirect(url);
     }
   }
 
   return NextResponse.next();
 }
 
+// Proxy ใช้เฉพาะกับหน้า /admin/* เท่านั้น
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/admin/:path*'],
 };

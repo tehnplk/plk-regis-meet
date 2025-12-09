@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Header } from '../_components/event-ui';
 import type { Event } from '../_data/database';
+import { getJWTToken } from '@/lib/auth';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const TH_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -48,7 +49,17 @@ export default function EventCalendarPage() {
     const controller = new AbortController();
     const load = async () => {
       try {
-        const res = await fetch('/api/events', { signal: controller.signal, cache: 'no-store' });
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('Missing JWT token');
+        }
+        const res = await fetch('/api/events', {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) {
           throw new Error('Failed to load events');
         }

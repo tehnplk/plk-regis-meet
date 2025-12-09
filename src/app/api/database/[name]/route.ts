@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getTokenFromRequest, verifyToken } from '@/lib/jwt';
 
 interface Params {
   name: string;
@@ -8,9 +9,19 @@ interface Params {
 const MAX_ROWS = 300;
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<Params> },
 ) {
+  // Require JWT to read arbitrary database tables.
+  const token = getTokenFromRequest(req);
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
   const { name } = await params;
 
   if (!name || !/^[A-Za-z0-9_]+$/.test(name)) {

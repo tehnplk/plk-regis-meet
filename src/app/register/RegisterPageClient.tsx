@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Header, RegistrationForm } from '../_components/event-ui';
+import { getJWTToken } from '@/lib/auth';
 import type { Event } from '../_data/database';
 
 export default function RegisterPageClient() {
@@ -25,7 +26,15 @@ export default function RegisterPageClient() {
 
     const load = async () => {
       try {
-        const res = await fetch(`/api/events/${eventId}`);
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('Missing JWT token');
+        }
+        const res = await fetch(`/api/events/${eventId}` , {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (res.status === 404) {
           setEvent(undefined);
           setError('ไม่พบกิจกรรมที่ต้องการ');

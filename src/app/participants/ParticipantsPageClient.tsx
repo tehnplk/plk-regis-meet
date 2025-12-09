@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header, ParticipantsSection } from '../_components/event-ui';
+import { getJWTToken } from '@/lib/auth';
 import type { Event, Participant } from '../_data/database';
 
 export default function ParticipantsPageClient() {
@@ -26,7 +27,15 @@ export default function ParticipantsPageClient() {
 
     const load = async () => {
       try {
-        const res = await fetch(`/api/events/${eventId}`);
+        const token = await getJWTToken();
+        if (!token) {
+          throw new Error('Missing JWT token');
+        }
+        const res = await fetch(`/api/events/${eventId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (res.status === 404) {
           setEvent(null);

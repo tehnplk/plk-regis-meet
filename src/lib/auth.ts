@@ -3,10 +3,19 @@ const TOKEN_KEY = 'jwt_token';
 
 export async function getJWTToken(): Promise<string | null> {
   try {
-    // Check if token exists in localStorage
+    const tryFetch = async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const token = data.token as string | undefined;
+      if (!token) return null;
+      localStorage.setItem(TOKEN_KEY, token);
+      return token;
+    };
+
+    // Check if token exists in localStorage and is still valid
     const stored = localStorage.getItem(TOKEN_KEY);
     if (stored) {
-      // TODO: Check if token is still valid
       try {
         const parts = stored.split('.');
         if (parts.length === 3) {
@@ -19,14 +28,28 @@ export async function getJWTToken(): Promise<string | null> {
             const payloadJson = atob(
               padded.replace(/-/g, '+').replace(/_/g, '/'),
             );
-            const payload = JSON.parse(payloadJson) as { exp?: number };
-
-            if (!payload.exp) {
-              return stored;
-            }
+            const payload = JSON.parse(payloadJson) as {
+              exp?: number;
+              providerId?: string;
+            };
 
             const now = Math.floor(Date.now() / 1000);
-            if (now < payload.exp) {
+
+            // If token has no exp, treat it as non-expiring
+            if (!payload.exp || now < payload.exp) {
+              // If this token already has providerId, prefer it as a privileged token
+              if (payload.providerId) {
+                return stored;
+              }
+
+              // Token is a valid public token (no providerId). Try to upgrade to a
+              // session-based token if the user is logged in; if that fails, keep using
+              // the public token so read-only endpoints still work.
+              const sessionToken = await tryFetch('/api/auth/token');
+              if (sessionToken) {
+                return sessionToken;
+              }
+
               return stored;
             }
           }
@@ -35,20 +58,11 @@ export async function getJWTToken(): Promise<string | null> {
         // If decoding fails, fall through to fetch a fresh token
       }
 
-      // Token missing, invalid, or expired e clear and fetch a new one
+      // Token invalid or expired – clear and fetch a new one
       localStorage.removeItem(TOKEN_KEY);
     }
 
     // Fetch new token from API (prefer session token, fallback to public token)
-    const tryFetch = async (url: string) => {
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const data = await res.json();
-      const token = data.token as string | undefined;
-      if (!token) return null;
-      localStorage.setItem(TOKEN_KEY, token);
-      return token;
-    };
 
     const sessionToken = await tryFetch('/api/auth/token');
     if (sessionToken) return sessionToken;
