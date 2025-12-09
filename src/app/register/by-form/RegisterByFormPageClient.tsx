@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { RegistrationForm } from '../../_components/event-ui';
+import { RegistrationForm, formatThaiDate } from '../../_components/event-ui';
 import type { Event } from '../../_data/database';
 import { getJWTToken } from '@/lib/auth';
 
@@ -83,7 +83,11 @@ export default function RegisterByFormPageClient({
               <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">วันที่ / เวลา</p>
                 <p className="text-sm text-gray-900 mt-1">
-                  {event.beginDate ?? '-'}
+                  {event.beginDate
+                    ? event.endDate && event.endDate !== event.beginDate
+                      ? `${formatThaiDate(event.beginDate)} - ${formatThaiDate(event.endDate)}`
+                      : formatThaiDate(event.beginDate)
+                    : '-'}
                   {event.time ? ` เวลา ${event.time}` : ''}
                 </p>
               </div>
