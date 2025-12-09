@@ -78,7 +78,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     providerId?: string | null;
   };
 
-  if (!name || !org || !phone) {
+  if (!name || !org || !phone || !email) {
     return new NextResponse('Missing required fields', { status: 400 });
   }
 
@@ -106,7 +106,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
         name,
         org,
         position: position ?? '',
-        email: email ?? null,
+        email,
         phone,
         providerId: providerId && providerId.trim() !== '' ? providerId : null,
         foodType: normalizedFoodType,
