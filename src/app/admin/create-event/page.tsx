@@ -7,6 +7,7 @@ import type { Event } from '../../_data/database';
 import { Header } from '../../_components/event-ui';
 import { EventForm } from '../../_components/event-form';
 import { getJWTToken } from '@/lib/auth';
+import { toast } from 'react-hot-toast';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
@@ -22,7 +23,6 @@ export default function CreateEventPage() {
   const [initialEvent, setInitialEvent] = useState<Event | undefined>();
   const [loading, setLoading] = useState<boolean>(isEdit);
   const [error, setError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const providerId = useMemo(() => {
     const rawProfile = (session?.user as any)?.profile as string | undefined;
@@ -125,7 +125,7 @@ export default function CreateEventPage() {
                 const message = isEdit
                   ? 'บันทึกการแก้ไขกิจกรรมสำเร็จ'
                   : 'สร้างกิจกรรมสำเร็จ';
-                setToastMessage(message);
+                toast.success(message);
 
                 const target = '/admin';
                 setTimeout(() => router.push(target), 1200);
@@ -135,14 +135,6 @@ export default function CreateEventPage() {
           </div>
         )}
       </main>
-
-      {toastMessage && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="rounded-lg bg-emerald-600 text-white shadow-lg px-4 py-3 text-sm font-medium">
-            {toastMessage}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

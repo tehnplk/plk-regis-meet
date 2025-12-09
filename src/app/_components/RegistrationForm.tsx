@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { MapPin, AlertTriangle } from 'lucide-react';
 import { CheckCircle, UserPlus } from 'lucide-react';
 import { getJWTToken } from '@/lib/auth';
+import { toast } from 'react-hot-toast';
 
 // Calculate distance between two coordinates using Haversine formula
 function getDistanceMeters(
@@ -56,7 +57,6 @@ export const RegistrationForm = ({
     .trim();
   const [phoneInput, setPhoneInput] = useState(initialProfile?.phone ?? '');
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Geolocation state
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -200,8 +200,7 @@ export const RegistrationForm = ({
         eventTitle && eventTitle.trim()
           ? `ลงทะเบียนสำเร็จสำหรับงาน: ${eventTitle}`
           : 'ลงทะเบียนสำเร็จ';
-      setToastMessage(successText);
-      setTimeout(() => setToastMessage(null), 1600);
+      toast.success(successText);
       setTimeout(() => onSubmitted?.(), 1200);
     } catch (error) {
       console.error(error);
@@ -375,12 +374,6 @@ export const RegistrationForm = ({
           ยืนยันการลงทะเบียน
         </button>
       </div>
-
-      {toastMessage && (
-        <div className="fixed bottom-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
-          {toastMessage}
-        </div>
-      )}
     </form>
   );
 };
