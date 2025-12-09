@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { APP_VERSION } from "./Version";
 
 const geistSans = Inter({
   variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PLK Regis Meet",
+  title: `PLK Regis Meet v${APP_VERSION}`,
   description: "ระบบลงทะเบียนและบริหารจัดการกิจกรรม",
 };
 
