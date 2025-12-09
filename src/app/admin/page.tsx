@@ -372,6 +372,11 @@ export default function AdminEventsPage() {
         onUpdate={updateParticipant}
         onDelete={deleteParticipant}
         saving={savingParticipant}
+        canManage={!!(
+          providerId &&
+          selectedEvent &&
+          (selectedEvent.providerIdCreated ?? '') === String(providerId)
+        )}
       />
     </div>
   );
@@ -388,6 +393,7 @@ function ParticipantsModal({
   onUpdate,
   onDelete,
   saving,
+  canManage,
 }: {
   open: boolean;
   onClose: () => void;
@@ -398,6 +404,7 @@ function ParticipantsModal({
   onUpdate: (p: Partial<Participant> & { id: number }) => Promise<void> | void;
   onDelete: (id: number) => void;
   saving: boolean;
+  canManage: boolean;
 }) {
   if (!open || !event) return null;
 
@@ -409,6 +416,7 @@ function ParticipantsModal({
   };
 
   const startEdit = (p: Participant) => {
+    if (!canManage) return;
     setEditingId(p.id);
     setDraft({ ...p });
   };
@@ -423,12 +431,13 @@ function ParticipantsModal({
   };
 
   const handleSave = async () => {
-    if (!editingId) return;
+    if (!editingId || !canManage) return;
     await onUpdate({ id: editingId, ...draft });
     cancelEdit();
   };
 
   const confirmDelete = async (id: number) => {
+    if (!canManage) return;
     try {
       const result = await Swal.fire({
         title: 'ยืนยันการลบ',
@@ -670,50 +679,54 @@ function ParticipantsModal({
                         </div>
 
                         <div className="w-28 flex items-start justify-end gap-2 text-xs">
-                          {isEditing ? (
+                          {canManage && (
                             <>
-                              <button
-                                type="button"
-                                className="p-1.5 rounded-md border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 text-emerald-700"
-                                disabled={saving}
-                                onClick={handleSave}
-                                title="บันทึก"
-                                aria-label="บันทึก"
-                              >
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button
-                                type="button"
-                                className="p-1.5 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
-                                onClick={cancelEdit}
-                                title="ยกเลิก"
-                                aria-label="ยกเลิก"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
+                              {isEditing ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="p-1.5 rounded-md border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 text-emerald-700"
+                                    disabled={saving}
+                                    onClick={handleSave}
+                                    title="บันทึก"
+                                    aria-label="บันทึก"
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="p-1.5 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
+                                    onClick={cancelEdit}
+                                    title="ยกเลิก"
+                                    aria-label="ยกเลิก"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="p-1.5 rounded-md border border-gray-200 hover:border-blue-200 hover:bg-blue-50 text-blue-600"
+                                  onClick={() => startEdit(p)}
+                                  title="แก้ไข"
+                                  aria-label="แก้ไข"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                              )}
+                              {!isEditing && (
+                                <button
+                                  type="button"
+                                  className="p-1.5 rounded-md border border-gray-200 hover:border-red-200 hover:bg-red-50 text-red-600"
+                                  onClick={() => void confirmDelete(p.id)}
+                                  disabled={saving}
+                                  title="ลบ"
+                                  aria-label="ลบ"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                             </>
-                          ) : (
-                            <button
-                              type="button"
-                              className="p-1.5 rounded-md border border-gray-200 hover:border-blue-200 hover:bg-blue-50 text-blue-600"
-                              onClick={() => startEdit(p)}
-                              title="แก้ไข"
-                              aria-label="แก้ไข"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                          )}
-                          {!isEditing && (
-                            <button
-                              type="button"
-                              className="p-1.5 rounded-md border border-gray-200 hover:border-red-200 hover:bg-red-50 text-red-600"
-                              onClick={() => void confirmDelete(p.id)}
-                              disabled={saving}
-                              title="ลบ"
-                              aria-label="ลบ"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
                           )}
                         </div>
                       </div>
