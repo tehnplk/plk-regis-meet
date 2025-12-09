@@ -75,7 +75,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
   const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
   const progress = Math.min((event.registered / event.capacity) * 100, 100);
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
-  const qrValue = `${baseUrl}/register?eventId=${event.id}`;
+  const qrValue = `${baseUrl}/poster?eventId=${event.id}`;
   const daysUntil = useMemo(() => getDaysUntil(event.beginDate), [event.beginDate]);
   const [showParticipants, setShowParticipants] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);

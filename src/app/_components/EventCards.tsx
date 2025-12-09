@@ -50,7 +50,7 @@ export const EventCards = ({
           const palette = accentPalettes[idx % accentPalettes.length];
           const progress = Math.min((event.registered / event.capacity) * 100, 100);
           const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
-          const qrValue = `${baseUrl}/register?eventId=${event.id}`;
+          const qrValue = `${baseUrl}/poster?eventId=${event.id}`;
           const daysUntil = getDaysUntil(event.beginDate);
 
           return (
