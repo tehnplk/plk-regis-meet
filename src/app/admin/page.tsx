@@ -23,6 +23,10 @@ export default function AdminEventsPage() {
   const [showOnlyMine, setShowOnlyMine] = useState(false);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
   const [savingParticipant, setSavingParticipant] = useState(false);
+  const [searchTitle, setSearchTitle] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
 
   const providerId = useMemo(() => {
     const rawProfile = (session?.user as any)?.profile as string | undefined;
@@ -163,52 +167,154 @@ export default function AdminEventsPage() {
     }
   };
 
-  const filteredEvents =
-    showOnlyMine && providerId
-      ? events.filter((e) => (e.providerIdCreated ?? '') === String(providerId))
-      : events;
+  const filteredEvents = useMemo(() => {
+    let list = [...events];
+
+    if (showOnlyMine && providerId) {
+      list = list.filter((e) => (e.providerIdCreated ?? '') === String(providerId));
+    }
+
+    const titleQuery = searchTitle.trim().toLowerCase();
+    if (titleQuery) {
+      list = list.filter((e) => (e.title ?? '').toLowerCase().includes(titleQuery));
+    }
+
+    if (filterStatus) {
+      list = list.filter((e) => e.status === filterStatus);
+    }
+
+    if (filterDateFrom || filterDateTo) {
+      const from = filterDateFrom ? new Date(filterDateFrom) : null;
+      const to = filterDateTo ? new Date(filterDateTo) : null;
+
+      list = list.filter((e) => {
+        if (!e.beginDate) return false;
+        const d = new Date(e.beginDate);
+        if (Number.isNaN(d.getTime())) return false;
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      });
+    }
+
+    return list;
+  }, [events, showOnlyMine, providerId, searchTitle, filterStatus, filterDateFrom, filterDateTo]);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-gray-900">
       <Header />
       <main className="max-w-7xl mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm mt-1">
-              รายการกิจกรรม
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <label
-              className={`flex items-center gap-2 text-sm font-medium ${
-                !providerId ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              title={
-                providerId
-                  ? 'แสดงเฉพาะกิจกรรมที่คุณสร้าง'
-                  : 'ไม่พบ provider_id ใน session กรุณาเข้าสู่ระบบใหม่'
-              }
-            >
-              <span>เฉพาะของฉัน</span>
-              <span
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  showOnlyMine ? 'bg-emerald-600' : 'bg-gray-300'
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm mt-1">
+                รายการกิจกรรม
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <label
+                className={`flex items-center gap-2 text-sm font-medium ${
+                  !providerId ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
+                title={
+                  providerId
+                    ? 'แสดงเฉพาะกิจกรรมที่คุณสร้าง'
+                    : 'ไม่พบ provider_id ใน session กรุณาเข้าสู่ระบบใหม่'
+                }
               >
-                <input
-                  type="checkbox"
-                  className="peer sr-only"
-                  checked={showOnlyMine}
-                  onChange={() => setShowOnlyMine((prev) => !prev)}
-                  disabled={!providerId}
-                />
+                <span>เฉพาะของฉัน</span>
                 <span
-                  className={`ml-[2px] inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                    showOnlyMine ? 'translate-x-5' : 'translate-x-0'
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    showOnlyMine ? 'bg-emerald-600' : 'bg-gray-300'
                   }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={showOnlyMine}
+                    onChange={() => setShowOnlyMine((prev) => !prev)}
+                    disabled={!providerId}
+                  />
+                  <span
+                    className={`ml-[2px] inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      showOnlyMine ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="w-full sm:max-w-xs">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                ค้นหาชื่อกิจกรรม
+              </label>
+              <input
+                type="text"
+                value={searchTitle}
+                onChange={(e) => setSearchTitle(e.target.value)}
+                placeholder="พิมพ์ชื่อกิจกรรม..."
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-3 items-end">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  วันที่เริ่ม (จาก)
+                </label>
+                <input
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
-              </span>
-            </label>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  วันที่เริ่ม (ถึง)
+                </label>
+                <input
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  สถานะของกิจกรรม
+                </label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                >
+                  <option value="">ทุกสถานะ</option>
+                  <option value="open">เปิดลงทะเบียน</option>
+                  <option value="scheduled">ตามกำหนด</option>
+                  <option value="confirmed">ยืนยันแล้ว</option>
+                  <option value="full">ที่นั่งเต็ม</option>
+                  <option value="pending">รอชำระเงิน</option>
+                  <option value="closed">ปิดรับสมัคร</option>
+                  <option value="cancelled">ยกเลิก</option>
+                  <option value="postponed">เลื่อน</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTitle('');
+                  setFilterStatus('');
+                  setFilterDateFrom('');
+                  setFilterDateTo('');
+                }}
+                className="ml-auto rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                ล้างตัวกรอง
+              </button>
+            </div>
           </div>
         </div>
 
