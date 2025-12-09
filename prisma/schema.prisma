@@ -79,19 +79,20 @@ model Event {
 }
 
 model Participant {
-  id       Int                @id @default(autoincrement())
-  eventId  Int
-  event    Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  eventId    Int
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  name     String
-  org      String
-  position String
-  email    String
-  phone    String
-  foodType String?
-  status   String
-  regDate  String
-  regTime  DateTime           @default(now())
+  name       String
+  org        String
+  position   String
+  email      String
+  phone      String
+  providerId String?
+  foodType   String?
+  status     String
+  regDate    String
+  regTime    DateTime @default(now())
 }
 
 model LoginLog {

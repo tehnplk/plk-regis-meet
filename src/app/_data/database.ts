@@ -40,6 +40,7 @@ export interface Participant {
   position: string;
   email: string;
   phone: string;
+  providerId?: string | null;
   foodType?: 'normal' | 'islam';
   status: ParticipantStatus;
   regDate: string;

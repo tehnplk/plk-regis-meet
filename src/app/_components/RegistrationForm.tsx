@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useMemo } from 'react';
 import { MapPin, AlertTriangle } from 'lucide-react';
 import { CheckCircle, UserPlus } from 'lucide-react';
 import { getJWTToken } from '@/lib/auth';
 import { toast } from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
 
 // Calculate distance between two coordinates using Haversine formula
 function getDistanceMeters(
@@ -54,6 +55,22 @@ export const RegistrationForm = ({
   eventLongitude?: number | null;
   inputTextClassName?: string;
 }) => {
+  const { data: session } = useSession();
+
+  const providerIdFromSession = useMemo(() => {
+    const raw = (session?.user as any)?.profile as string | undefined;
+    if (!raw) return undefined;
+    try {
+      const profile = JSON.parse(raw) as any;
+      return (
+        profile?.provider_id ??
+        profile?.providerId ??
+        undefined
+      );
+    } catch {
+      return undefined;
+    }
+  }, [session]);
   const defaultName = [initialProfile?.titleTh ?? '', initialProfile?.name ?? '']
     .join('')
     .trim();
@@ -154,6 +171,7 @@ export const RegistrationForm = ({
     const email = String(formData.get('email') ?? '').trim();
     const phoneRaw = String(formData.get('phone') ?? '').trim();
     const foodType = (formData.get('foodType') ?? '').toString() as 'normal' | 'islam' | '';
+    const providerId = String(formData.get('providerId') ?? '').trim();
 
     const phone = phoneRaw.replace(/\D/g, '');
 
@@ -190,6 +208,7 @@ export const RegistrationForm = ({
           position,
           email,
           phone,
+          providerId: providerId || undefined,
           foodType,
         }),
       });
@@ -215,6 +234,7 @@ export const RegistrationForm = ({
       onSubmit={handleSubmit}
       className="p-6 space-y-5 max-w-4xl mx-auto bg-white rounded-xl border border-gray-200 shadow-sm"
     >
+      <input type="hidden" name="providerId" value={providerIdFromSession ?? ''} />
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
           ชื่อ-นามสกุล <span className="text-red-500">*</span>

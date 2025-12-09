@@ -67,7 +67,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     return new NextResponse('Invalid payload', { status: 400 });
   }
 
-  const { name, org, position, email, phone, foodType, status } = body as {
+  const { name, org, position, email, phone, foodType, status, providerId } = body as {
     name?: string;
     org?: string;
     position?: string;
@@ -75,6 +75,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     phone?: string;
     foodType?: 'normal' | 'islam';
     status?: 'confirmed' | 'pending' | 'cancelled';
+    providerId?: string | null;
   };
 
   if (!name || !org || !phone) {
@@ -107,6 +108,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
         position: position ?? '',
         email: email ?? null,
         phone,
+        providerId: providerId && providerId.trim() !== '' ? providerId : null,
         foodType: normalizedFoodType,
         status: normalizedStatus,
         regDate,
