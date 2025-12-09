@@ -117,6 +117,7 @@ export default function RegisterByFormPageClient({
           checkInRadiusMeters={event?.checkInRadiusMeters}
           eventLatitude={event?.latitude}
           eventLongitude={event?.longitude}
+          inputTextClassName="text-blue-700"
         />
       </main>
     </div>

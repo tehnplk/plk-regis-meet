@@ -35,6 +35,7 @@ export const RegistrationForm = ({
   checkInRadiusMeters,
   eventLatitude,
   eventLongitude,
+  inputTextClassName,
 }: {
   eventId?: number;
   eventTitle?: string;
@@ -51,6 +52,7 @@ export const RegistrationForm = ({
   checkInRadiusMeters?: number | null;
   eventLatitude?: number | null;
   eventLongitude?: number | null;
+  inputTextClassName?: string;
 }) => {
   const defaultName = [initialProfile?.titleTh ?? '', initialProfile?.name ?? '']
     .join('')
@@ -221,7 +223,7 @@ export const RegistrationForm = ({
           required
           name="name"
           type="text"
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+          className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm ${inputTextClassName ?? ''}`}
           placeholder="เช่น นายสมชาย มีมาก"
           defaultValue={defaultName || undefined}
         />
@@ -236,7 +238,7 @@ export const RegistrationForm = ({
             required
             name="org"
             type="text"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm ${inputTextClassName ?? ''}`}
             placeholder="ส่วนราชการ/องค์กร"
             defaultValue={initialProfile?.org}
           />
@@ -246,7 +248,7 @@ export const RegistrationForm = ({
           <input
             name="position"
             type="text"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm ${inputTextClassName ?? ''}`}
             placeholder="ระบุตำแหน่ง"
             defaultValue={initialProfile?.position}
           />
@@ -263,7 +265,7 @@ export const RegistrationForm = ({
             name="phone"
             type="tel"
             maxLength={12}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm ${inputTextClassName ?? ''}`}
             placeholder="เช่น 08 1234 5678"
             value={phoneInput}
             onChange={(e) => {
@@ -294,7 +296,7 @@ export const RegistrationForm = ({
           <input
             name="email"
             type="email"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm ${inputTextClassName ?? ''}`}
             placeholder="name@example.com"
             defaultValue={initialProfile?.email}
           />
