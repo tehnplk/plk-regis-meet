@@ -210,7 +210,10 @@ export const RegistrationForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-5 max-w-lg mx-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="p-6 space-y-5 max-w-4xl mx-auto bg-white rounded-xl border border-gray-200 shadow-sm"
+    >
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
           ชื่อ-นามสกุล <span className="text-red-500">*</span>

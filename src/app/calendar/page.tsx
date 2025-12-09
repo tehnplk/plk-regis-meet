@@ -173,16 +173,19 @@ export default function EventCalendarPage() {
                   >
                     <div className="text-sm font-semibold text-gray-800">{day || ''}</div>
                     {dayEvents.slice(0, 3).map((evt, index) => (
-                      <div
+                      <a
                         key={evt.id}
-                        className={`text-[10px] font-medium ${colorClasses[index % colorClasses.length]} rounded px-1.5 py-0.5 line-clamp-2`}
+                        href={`/poster?eventId=${evt.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`block text-[10px] font-medium ${colorClasses[index % colorClasses.length]} rounded px-1.5 py-0.5 line-clamp-2`}
                         title={evt.title}
                       >
                         <div className="flex items-start gap-1.5 text-[11px] font-semibold text-gray-900 leading-snug">
                           <span className="text-emerald-500 leading-none">•</span>
                           <span className="line-clamp-2">{evt.title}</span>
                         </div>
-                      </div>
+                      </a>
                     ))}
                     {dayEvents.length > 3 && (
                       <button

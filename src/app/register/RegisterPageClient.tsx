@@ -65,7 +65,7 @@ export default function RegisterPageClient() {
         <RegistrationForm
           eventId={eventId}
           eventTitle={event?.title}
-          onSubmitted={() => router.push('/')}
+          onSubmitted={() => router.push(eventId ? `/poster?eventId=${eventId}` : '/')}
         />
       </main>
     </div>

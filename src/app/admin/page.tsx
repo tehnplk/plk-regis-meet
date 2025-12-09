@@ -8,6 +8,7 @@ import { getJWTToken } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 import { Check, Pencil, Trash2, X, MapPin, Clock3, FileText, AlignLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 export default function AdminEventsPage() {
   const router = useRouter();
@@ -437,6 +438,60 @@ function ParticipantsModal({
     onDelete(id);
   };
 
+  const handleExportExcel = () => {
+    if (!participants || participants.length === 0) {
+      return;
+    }
+
+    const sorted = [...participants]
+      .slice()
+      .sort((a, b) => {
+        const toTs = (p: Participant) => {
+          const date = p.regDate ? new Date(p.regDate as any) : null;
+          const time =
+            p.regTime instanceof Date
+              ? p.regTime
+              : p.regTime
+              ? new Date(`${p.regDate} ${p.regTime}`)
+              : null;
+          const ts = time?.getTime() ?? date?.getTime() ?? 0;
+          return Number.isNaN(ts) ? 0 : ts;
+        };
+        return toTs(a) - toTs(b);
+      });
+
+    const rows = sorted.map((p, index) => ({
+      ลำดับ: index + 1,
+      ชื่อสกุล: p.name ?? '',
+      ตำแหน่ง: p.position ?? '',
+      หน่วยงาน: p.org ?? '',
+      โทรศัพท์: p.phone ?? '',
+      อีเมล: p.email ?? '',
+      อาหาร: FOOD_LABELS[p.foodType ?? ''] ?? '',
+      สถานะ: p.status ?? '',
+      วันที่ลงทะเบียน: p.regDate ?? '',
+      เวลาลงทะเบียน: (() => {
+        if (!p.regTime) return '';
+        const d =
+          p.regTime instanceof Date
+            ? p.regTime
+            : new Date(p.regTime as any);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toLocaleTimeString('th-TH', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      })(),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'participants');
+    const safeTitle =
+      event?.title?.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40) || 'participants';
+    XLSX.writeFile(workbook, `${safeTitle}.xlsx`);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 py-6 overflow-auto">
       <div className="w-full max-w-6xl bg-white rounded-xl shadow-2xl border border-gray-200 p-6 space-y-4">
@@ -460,7 +515,15 @@ function ParticipantsModal({
 
           <div className="border border-gray-200 rounded-lg overflow-hidden mt-3">
             <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 flex items-center justify-between">
-              รายชื่อ ({participants.length})
+              <span>รายชื่อ ({participants.length})</span>
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="px-2 py-1 text-xs rounded-md border border-emerald-300 text-emerald-700 bg-white hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={participants.length === 0 || loading}
+              >
+                ส่งออก Excel
+              </button>
             </div>
             <div className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200">
               <div className="flex items-center gap-2">

@@ -1,4 +1,3 @@
-import { Header } from '../_components/event-ui';
 import { providerIdProcess } from '../actions/sign-in';
 import { prisma } from '@/lib/prisma';
 import RegisterEntryClient from './RegisterEntryClient';
@@ -43,7 +42,6 @@ export default async function RegisterEntryPage({
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-gray-900">
-      <Header />
       <RegisterEntryClient
         eventId={eventId}
         eventTitle={eventTitle}

@@ -51,6 +51,25 @@ function getDaysUntil(dateStr: string): number | null {
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
+function maskName(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return '';
+  const parts = trimmed.split(/\s+/);
+  if (parts.length >= 2) {
+    return `${parts[0]} ***`;
+  }
+  const firstChar = trimmed[0] ?? '';
+  return firstChar ? `${firstChar}***` : '';
+}
+
+function maskPhone(phone: string): string {
+  const trimmed = phone.trim();
+  if (trimmed.length <= 2) {
+    return '*'.repeat(trimmed.length || 0);
+  }
+  return `${trimmed.slice(0, -2)}**`;
+}
+
 export default function PosterCardClient({ event }: { event: PosterEvent }) {
   const palette = accentPalettes[0];
   const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
@@ -190,7 +209,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
               className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
                 isUnavailable
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
               {event.status === 'cancelled' ? (
@@ -300,10 +319,12 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
                       {filteredParticipants.map((p, idx) => (
                         <tr key={p.id} className="hover:bg-gray-50">
                           <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
-                          <td className="px-4 py-2 text-gray-900">{p.name}</td>
+                          <td className="px-4 py-2 text-gray-900">{maskName(p.name)}</td>
                           <td className="px-4 py-2 text-gray-700">{p.position || '-'}</td>
                           <td className="px-4 py-2 text-gray-700">{p.org || '-'}</td>
-                          <td className="px-4 py-2 text-gray-600">{p.phone || '-'}</td>
+                          <td className="px-4 py-2 text-gray-600">
+                            {p.phone ? maskPhone(p.phone) : '-'}
+                          </td>
                           <td className="px-4 py-2 text-center text-gray-500 text-xs">{p.regDate || '-'}</td>
                           <td className="px-4 py-2 text-center text-gray-500 text-xs">
                             {p.regTime ? new Date(p.regTime).toLocaleTimeString('th-TH', {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Header, RegistrationForm } from '../../_components/event-ui';
+import { RegistrationForm } from '../../_components/event-ui';
 import type { Event } from '../../_data/database';
 import { getJWTToken } from '@/lib/auth';
 
@@ -67,7 +67,6 @@ export default function RegisterByFormPageClient({
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-gray-900">
-      <Header />
       <main className="max-w-4xl mx-auto p-6 space-y-4">
         {loading && (
           <p className="text-gray-600 text-sm">กำลังโหลดข้อมูลงาน...</p>
@@ -77,7 +76,9 @@ export default function RegisterByFormPageClient({
         )}
         {!loading && !error && event && (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-emerald-800">กิจกรรม: {event.title}</p>
+            <p className="text-lg md:text-xl font-bold text-emerald-900">
+              กิจกรรม: {event.title}
+            </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">วันที่ / เวลา</p>
@@ -107,7 +108,7 @@ export default function RegisterByFormPageClient({
           eventId={eventId}
           eventTitle={event?.title}
           initialProfile={initialProfile}
-          onSubmitted={() => router.push('/')}
+          onSubmitted={() => router.push(eventId ? `/poster?eventId=${eventId}` : '/')}
           enableCheckInRadius={event?.enableCheckInRadius}
           checkInRadiusMeters={event?.checkInRadiusMeters}
           eventLatitude={event?.latitude}
