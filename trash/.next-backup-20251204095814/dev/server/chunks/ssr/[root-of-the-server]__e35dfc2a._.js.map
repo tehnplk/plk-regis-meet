@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///E:/NextJS/plk-regis-meet/src/app/page.tsx"],"sourcesContent":["import { signInWithHealthId } from \"./actions/sign-in\";\n\nexport default function Home() {\n  return (\n    <main className=\"min-h-screen flex items-center justify-center bg-gray-50\">\n      <div className=\"p-6 rounded-lg shadow bg-white space-y-4 text-center\">\n        <h1 className=\"text-xl font-semibold\">PLK Regis Meet</h1>\n        <p className=\"text-sm text-gray-600\">Sign in with your Health ID to continue</p>\n        <form action={signInWithHealthId}>\n          <button\n            type=\"submit\"\n            className=\"px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2\"\n          >\n            Sign in with Health ID\n          </button>\n        </form>\n      </div>\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;;AAEe,SAAS;IACtB,qBACE,8OAAC;QAAK,WAAU;kBACd,cAAA,8OAAC;YAAI,WAAU;;8BACb,8OAAC;oBAAG,WAAU;8BAAwB;;;;;;8BACtC,8OAAC;oBAAE,WAAU;8BAAwB;;;;;;8BACrC,8OAAC;oBAAK,QAAQ,yJAAkB;8BAC9B,cAAA,8OAAC;wBACC,MAAK;wBACL,WAAU;kCACX;;;;;;;;;;;;;;;;;;;;;;AAOX"}}]
-}

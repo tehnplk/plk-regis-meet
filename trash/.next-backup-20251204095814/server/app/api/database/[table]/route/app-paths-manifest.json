@@ -1,3 +1,0 @@
-{
-  "/api/database/[table]/route": "app/api/database/[table]/route.js"
-}

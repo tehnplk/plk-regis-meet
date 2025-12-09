@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///E:/NextJS/plk-regis-meet/src/app/page.tsx"],"sourcesContent":["import { signInWithHealthId } from \"./actions/sign-in\";\n\nexport default function HomePage() {\n  return (\n    <main>\n      <form action={signInWithHealthId}>\n        <button type=\"submit\">Signin Health ID</button>\n      </form>\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;;AAEe,SAAS;IACtB,qBACE,8OAAC;kBACC,cAAA,8OAAC;YAAK,QAAQ,yJAAkB;sBAC9B,cAAA,8OAAC;gBAAO,MAAK;0BAAS;;;;;;;;;;;;;;;;AAI9B"}}]
-}
