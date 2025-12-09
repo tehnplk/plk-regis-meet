@@ -107,9 +107,10 @@ export async function GET(request: NextRequest) {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || request.url;
         const res = NextResponse.redirect(new URL(redirectTo, baseUrl));
 
+        const isSecure = request.nextUrl.protocol === 'https:';
         res.cookies.set('profile', JSON.stringify(profileData.data), {
             httpOnly: true,
-            secure: true,
+            secure: isSecure,
             sameSite: 'lax',
             path: '/',
             maxAge: 60 * 10, // 10 minutes
