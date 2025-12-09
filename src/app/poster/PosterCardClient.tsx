@@ -70,19 +70,34 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
     const load = async () => {
       setLoadingParticipants(true);
       try {
-        const token = await getJWTToken();
+        const fetchWithToken = async (token: string) =>
+          fetch(`/api/events/${event.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+        let token = await getJWTToken();
         if (!token) {
           setParticipantsError('ต้องเข้าสู่ระบบเพื่อดูรายชื่อผู้เข้าร่วม');
           return;
         }
-        const res = await fetch(`/api/events/${event.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) {
-          throw new Error('failed to load participants');
+
+        let res = await fetchWithToken(token);
+
+        // Retry once if auth failed (token expired/missing), try refresh/public token
+        if (res.status === 401 || res.status === 403) {
+          const retryToken = await getJWTToken();
+          if (retryToken && retryToken !== token) {
+            token = retryToken;
+            res = await fetchWithToken(token);
+          }
         }
+
+        if (!res.ok) {
+          throw new Error(`failed to load participants (${res.status})`);
+        }
+
         const data = await res.json();
         setParticipants((data.event?.participants ?? []) as Participant[]);
         setParticipantsError(null);
