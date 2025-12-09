@@ -103,7 +103,10 @@ export async function GET(request: NextRequest) {
     if (!is_auth) {
         //เก็บ profileData.data ลง session
         //redirectpage ไปที่ตัวแปร landing
-        const res = NextResponse.redirect(new URL(redirectTo, request.url));
+        // เชคว่า NEXT_PUBLIC_SITE_URL ที่ env.production มั้ย 
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || request.url;
+        const res = NextResponse.redirect(new URL(redirectTo, baseUrl));
+
         res.cookies.set('profile', JSON.stringify(profileData.data), {
             httpOnly: true,
             secure: true,
