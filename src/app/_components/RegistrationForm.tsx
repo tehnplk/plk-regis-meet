@@ -155,7 +155,7 @@ export const RegistrationForm = ({
 
     const phone = phoneRaw.replace(/\D/g, '');
 
-    if (!name || !org || !email || !phoneRaw) {
+    if (!name || !org || !phoneRaw) {
       window.alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
       return;
     }
@@ -257,19 +257,6 @@ export const RegistrationForm = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            อีเมล <span className="text-red-500">*</span>
-          </label>
-          <input
-            required
-            name="email"
-            type="email"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
-            placeholder="name@example.com"
-            defaultValue={initialProfile?.email}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
             เบอร์ติดต่อ <span className="text-red-500">*</span>
           </label>
           <input
@@ -300,6 +287,18 @@ export const RegistrationForm = ({
           {phoneError && (
             <p className="mt-1 text-xs text-red-500">{phoneError}</p>
           )}
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            อีเมล
+          </label>
+          <input
+            name="email"
+            type="email"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            placeholder="name@example.com"
+            defaultValue={initialProfile?.email}
+          />
         </div>
       </div>
 

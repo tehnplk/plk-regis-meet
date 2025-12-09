@@ -77,7 +77,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     status?: 'confirmed' | 'pending' | 'cancelled';
   };
 
-  if (!name || !org || !email || !phone) {
+  if (!name || !org || !phone) {
     return new NextResponse('Missing required fields', { status: 400 });
   }
 
@@ -105,7 +105,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
         name,
         org,
         position: position ?? '',
-        email,
+        email: email ?? null,
         phone,
         foodType: normalizedFoodType,
         status: normalizedStatus,
