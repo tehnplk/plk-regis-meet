@@ -24,6 +24,8 @@ type PosterEvent = {
   endDate: string | null;
   time: string;
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   registered: number;
   capacity: number;
   status: EventStatus;
@@ -177,8 +179,10 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             </div>
             <a
               href={
-                event.location
-                  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`
+                event.latitude != null && event.longitude != null
+                  ? `https://www.google.com/maps?q=${event.latitude},${event.longitude}`
+                  : event.location
+                  ? `https://www.google.com/maps?q=${encodeURIComponent(event.location)}`
                   : '#'
               }
               target="_blank"

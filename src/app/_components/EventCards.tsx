@@ -97,9 +97,9 @@ export const EventCards = ({
                     </div>
                     <a
                       href={
-                        event.latitude && event.longitude
-                          ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
-                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`
+                        event.latitude != null && event.longitude != null
+                          ? `https://www.google.com/maps?q=${event.latitude},${event.longitude}`
+                          : `https://www.google.com/maps?q=${encodeURIComponent(event.location)}`
                       }
                       target="_blank"
                       rel="noopener noreferrer"
