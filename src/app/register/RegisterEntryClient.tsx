@@ -138,9 +138,9 @@ export default function RegisterEntryClient({
     <main className="max-w-4xl mx-auto p-6 space-y-6">
       {eventId && (
         <div className="rounded-xl border-2 border-emerald-500 px-4 py-3 shadow-sm">
-          <p className="text-lg font-semibold text-emerald-900">เลือกวิธีลงทะเบียนสำหรับ</p>
+          <p className="text-base font-semibold text-emerald-900 text-center">เลือกวิธีลงทะเบียนสำหรับ</p>
           <p className="text-2xl font-black text-emerald-950">
-            กิจกรรม: {eventTitle ?? `#${eventId}`}
+            {eventTitle ?? `#${eventId}`}
           </p>
         </div>
       )}
@@ -214,7 +214,7 @@ export default function RegisterEntryClient({
                   ลงทะเบียนด้วย Provider ID
                 </div>
                 <p className={`mt-1 text-sm ${providerDisabled ? 'text-gray-400' : 'text-gray-600'}`}>
-                  ใช้บัญชีผู้ให้บริการของ MOPH Platform
+                  กรอกข้อมูลเข้าร่วมกิจกรรมแบบอัตโนมัติ
                 </p>
               </div>
             </div>
