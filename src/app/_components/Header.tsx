@@ -85,6 +85,14 @@ export const Header = () => {
               <span>รายการกิจกรรม</span>
             </a>
           )}
+          {session && (
+            <a
+              href="/admin/approve"
+              className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-200 text-blue-700 bg-white hover:bg-blue-50 transition-colors cursor-pointer"
+            >
+              <span>จัดการผู้ใช้</span>
+            </a>
+          )}
           {userName ? (
             <div className="flex items-center gap-2">
               <span className="max-w-[160px] truncate text-gray-700">{displayName}</span>

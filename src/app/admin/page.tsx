@@ -212,6 +212,13 @@ export default function AdminEventsPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => router.push('/admin/approve')}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-500 text-blue-600 bg-white hover:bg-blue-50"
+              >
+                จัดการผู้ใช้
+              </button>
               <label
                 className={`flex items-center gap-2 text-sm font-medium ${
                   !providerId ? 'opacity-50 cursor-not-allowed' : ''
