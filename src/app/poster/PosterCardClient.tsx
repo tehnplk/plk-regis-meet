@@ -464,59 +464,60 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
                     ไม่พบข้อมูลผู้ลงทะเบียน
                   </div>
                 ) : (
-                  <>
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                        <tr>
-                          <th className="px-4 py-3 w-12">ลำดับ</th>
-                          <th className="px-4 py-3">ชื่อ-นามสกุล</th>
-                          <th className="px-4 py-3">ตำแหน่ง</th>
-                          <th className="px-4 py-3">หน่วยงาน</th>
-                          <th className="px-4 py-3">เบอร์โทร</th>
-                          <th className="px-4 py-3 text-center">วันที่ลงทะเบียน</th>
-                          <th className="px-4 py-3 text-center">เวลาลงทะเบียน</th>
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                      <tr>
+                        <th className="px-4 py-3 w-12">ลำดับ</th>
+                        <th className="px-4 py-3">ชื่อ-นามสกุล</th>
+                        <th className="px-4 py-3">ตำแหน่ง</th>
+                        <th className="px-4 py-3">หน่วยงาน</th>
+                        <th className="px-4 py-3">เบอร์โทร</th>
+                        <th className="px-4 py-3 text-center">วันที่ลงทะเบียน</th>
+                        <th className="px-4 py-3 text-center">เวลาลงทะเบียน</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {filteredParticipants.map((p, idx) => (
+                        <tr key={p.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
+                          <td className="px-4 py-2 text-gray-900">{maskName(p.name)}</td>
+                          <td className="px-4 py-2 text-gray-700">{p.position || '-'}</td>
+                          <td className="px-4 py-2 text-gray-700">{p.org || '-'}</td>
+                          <td className="px-4 py-2 text-gray-600">
+                            {p.phone ? maskPhone(p.phone) : '-'}
+                          </td>
+                          <td className="px-4 py-2 text-center text-gray-500 text-xs">{p.regDate || '-'}</td>
+                          <td className="px-4 py-2 text-center text-gray-500 text-xs">
+                            {p.regTime ? new Date(p.regTime).toLocaleTimeString('th-TH', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }) : '-'}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {filteredParticipants.map((p, idx) => (
-                          <tr key={p.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
-                            <td className="px-4 py-2 text-gray-900">{maskName(p.name)}</td>
-                            <td className="px-4 py-2 text-gray-700">{p.position || '-'}</td>
-                            <td className="px-4 py-2 text-gray-700">{p.org || '-'}</td>
-                            <td className="px-4 py-2 text-gray-600">
-                              {p.phone ? maskPhone(p.phone) : '-'}
-                            </td>
-                            <td className="px-4 py-2 text-center text-gray-500 text-xs">{p.regDate || '-'}</td>
-                            <td className="px-4 py-2 text-center text-gray-500 text-xs">
-                              {p.regTime ? new Date(p.regTime).toLocaleTimeString('th-TH', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              }) : '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {orgSummary.length > 0 && (
-                      <div className="px-4 py-3 border-t bg-gray-50 text-xs text-gray-700">
-                        <div className="font-semibold mb-1">สรุปตามหน่วยงาน</div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1">
-                          {orgSummary.map((item) => (
-                            <div
-                              key={item.org}
-                              className="flex items-center justify-between gap-2"
-                            >
-                              <span className="truncate">{item.org}</span>
-                              <span className="whitespace-nowrap">{item.count} คน</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
+                      ))}
+                    </tbody>
+                  </table>
                 )}
               </div>
+              {!loadingParticipants &&
+                !participantsError &&
+                filteredParticipants.length > 0 &&
+                orgSummary.length > 0 && (
+                  <div className="px-4 py-3 border-t bg-gray-50 text-xs text-gray-700">
+                    <div className="font-semibold mb-1">สรุปตามหน่วยงาน</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1">
+                      {orgSummary.map((item) => (
+                        <div
+                          key={item.org}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <span className="truncate">{item.org}</span>
+                          <span className="whitespace-nowrap">{item.count} คน</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         </div>
