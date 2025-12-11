@@ -48,6 +48,9 @@ export async function GET(
         description: true,
         docLink: true,
         requiredItems: true,
+        secretPass: true,
+        preTestLink: true,
+        posTestLink: true,
         registerMethod: true,
         providerIdCreated: true,
         datetimeCreated: true,
@@ -137,6 +140,8 @@ export async function PUT(
     checkInRadiusMeters,
     docLink,
     requiredItems,
+    preTestLink,
+    posTestLink,
     registerMethod,
   } = body as {
     title?: string;
@@ -153,6 +158,8 @@ export async function PUT(
     checkInRadiusMeters?: number | string | null;
     docLink?: string | null;
     requiredItems?: string | null;
+    preTestLink?: string | null;
+    posTestLink?: string | null;
     registerMethod?: number;
   };
 
@@ -199,6 +206,8 @@ export async function PUT(
         description,
         docLink,
         requiredItems: requiredItems ?? null,
+        preTestLink,
+        posTestLink,
         registerMethod: registerMethod ?? 3,
         // If this event did not yet have an owner, claim it for the current provider
         ...(existingOwner ? {} : { providerIdCreated: String(requesterProviderId) }),

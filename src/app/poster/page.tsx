@@ -34,6 +34,9 @@ export default async function PosterPage({
             status: true,
             description: true,
             requiredItems: true,
+            secretPass: true,
+            preTestLink: true,
+            posTestLink: true,
             docLink: true,
           },
         })

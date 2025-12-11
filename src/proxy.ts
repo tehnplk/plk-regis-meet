@@ -9,7 +9,7 @@ import { auth } from "./authConfig";
 
 export async function proxy(request: any) {
   const { pathname } = request.nextUrl;
-
+  return NextResponse.next();
   // Protect admin pages using NextAuth session
   if (pathname.startsWith('/admin')) {
     const session = await auth();
@@ -29,5 +29,5 @@ export async function proxy(request: any) {
 
 // Proxy ใช้เฉพาะกับหน้า /admin/* เท่านั้น
 export const config = {
-  matcher: ['/admin/:path*'],
+  //matcher: ['/admin/:path*'],
 };

@@ -57,6 +57,8 @@ export async function POST(request: Request) {
     checkInRadiusMeters,
     docLink,
     requiredItems,
+    preTestLink,
+    posTestLink,
     registerMethod,
   } = body as {
     title?: string;
@@ -73,6 +75,8 @@ export async function POST(request: Request) {
     checkInRadiusMeters?: number | string | null;
     docLink?: string | null;
     requiredItems?: string | null;
+    preTestLink?: string | null;
+    posTestLink?: string | null;
     registerMethod?: number;
   };
 
@@ -132,6 +136,8 @@ export async function POST(request: Request) {
         description,
         docLink,
         requiredItems: requiredItems ?? null,
+        preTestLink,
+        posTestLink,
         registerMethod: registerMethod ?? 3,
         providerIdCreated: providerIdCreated ?? null,
         datetimeCreated: new Date(),

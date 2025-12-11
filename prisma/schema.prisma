@@ -70,6 +70,8 @@ model Event {
   status      String
   description String
   docLink     String?
+  preTestLink String?
+  posTestLink String?
   requiredItems String?      // สิ่งของที่ต้องนำมาเอง
   registerMethod Int @default(3) // 1=provider_id only, 2=form only, 3=both
   secretPass   String?

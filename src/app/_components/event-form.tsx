@@ -69,6 +69,9 @@ export const EventForm = ({
     const description = String(formData.get('description') ?? '').trim();
     const docLinkRaw = String(formData.get('docLink') ?? '').trim();
     const requiredItemsRaw = String(formData.get('requiredItems') ?? '').trim();
+    const preTestLinkRaw = String(formData.get('preTestLink') ?? '').trim();
+    const posTestLinkRaw = String(formData.get('posTestLink') ?? '').trim();
+    const secretPassRaw = String(formData.get('secretPass') ?? '').trim();
 
     const capacity = Number(capacityRaw);
 
@@ -113,6 +116,9 @@ export const EventForm = ({
         checkInRadiusMeters: effectiveCheckInRadius,
         docLink: docLinkRaw || null,
         requiredItems: requiredItemsRaw || null,
+        preTestLink: preTestLinkRaw || null,
+        posTestLink: posTestLinkRaw || null,
+        secretPass: secretPassRaw || null,
         registerMethod,
       };
 
@@ -369,7 +375,7 @@ export const EventForm = ({
           </label>
           <textarea
             name="requiredItems"
-            rows={3}
+            rows={1}
             defaultValue={initialEvent?.requiredItems ?? undefined}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="เช่น คอมพิวเตอร์โน๊ตบุค"
@@ -386,6 +392,45 @@ export const EventForm = ({
             defaultValue={initialEvent?.docLink ?? undefined}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="เช่น https://example.com/document.pdf"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            ลิงก์แบบทดสอบก่อนอบรม (Pre-test)
+          </label>
+          <input
+            name="preTestLink"
+            type="url"
+            defaultValue={(initialEvent as any)?.preTestLink ?? undefined}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            placeholder="เช่น https://example.com/pre-test"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            ลิงก์แบบทดสอบหลังอบรม (Post-test)
+          </label>
+          <input
+            name="posTestLink"
+            type="url"
+            defaultValue={(initialEvent as any)?.posTestLink ?? undefined}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            placeholder="เช่น https://example.com/post-test"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            รหัสลับ (secretPass)
+          </label>
+          <input
+            name="secretPass"
+            type="text"
+            defaultValue={(initialEvent as any)?.secretPass ?? undefined}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            placeholder="ปล่อยว่างเพื่อใช้ 12345678"
           />
         </div>
 

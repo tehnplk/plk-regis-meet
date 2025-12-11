@@ -34,6 +34,8 @@ type PosterEvent = {
   description: string | null;
   requiredItems: string | null;
   docLink: string | null;
+  preTestLink?: string | null;
+  posTestLink?: string | null;
   secretPass?: string | null;
 };
 
@@ -315,10 +317,10 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             </div>
             <span className="text-[10px] text-gray-500 font-medium">scan ลงทะเบียน</span>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2 w-full max-w-xs ml-auto">
             <a
               href={`/register?eventId=${event.id}`}
-              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
+              className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
                 isUnavailable
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -344,10 +346,30 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             <button
               type="button"
               onClick={() => setShowParticipants(true)}
-              className="py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors text-center cursor-pointer"
+              className="w-full py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors text-center cursor-pointer"
             >
               ดูรายชื่อ
             </button>
+            {event.preTestLink && (
+              <a
+                href={event.preTestLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 px-3 bg-white border border-emerald-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors text-center cursor-pointer"
+              >
+                Pre-test
+              </a>
+            )}
+            {event.posTestLink && (
+              <a
+                href={event.posTestLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 px-3 bg-white border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors text-center cursor-pointer"
+              >
+                Post-test
+              </a>
+            )}
           </div>
         </div>
       </div>
