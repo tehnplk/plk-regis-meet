@@ -16,6 +16,8 @@ import {
 import type { EventStatus, Participant } from '../_data/database';
 import { DateDisplay, StatusBadge } from '../_components/event-ui';
 import { getJWTToken } from '@/lib/auth';
+import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 type PosterEvent = {
   id: number;
@@ -32,6 +34,7 @@ type PosterEvent = {
   description: string | null;
   requiredItems: string | null;
   docLink: string | null;
+  secretPass?: string | null;
 };
 
 const accentPalettes = [
@@ -141,6 +144,95 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
       (p.email ?? '').toLowerCase().includes(term)
     );
   });
+
+  const handleExportExcel = async () => {
+    if (!participants || participants.length === 0) {
+      return;
+    }
+    const rawSecret = (event.secretPass ?? '').trim();
+    const secret = rawSecret === '' ? '12345678' : rawSecret;
+
+    const result = await Swal.fire({
+      title: 'กรอกรหัสผ่านสำหรับส่งออก',
+      input: 'password',
+      inputLabel: 'secretPass ของกิจกรรมนี้',
+      inputPlaceholder: 'กรอกรหัสผ่าน',
+      inputAttributes: {
+        autocapitalize: 'off',
+        autocorrect: 'off',
+      },
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    const value = (result.value ?? '').trim();
+    if (value !== secret) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'รหัสผ่านไม่ถูกต้อง',
+        text: 'ไม่สามารถส่งออกข้อมูลได้',
+      });
+      return;
+    }
+
+    const sorted = [...participants]
+      .slice()
+      .sort((a, b) => {
+        const toTs = (p: Participant) => {
+          const date = p.regDate ? new Date(p.regDate as any) : null;
+          const time =
+            p.regTime instanceof Date
+              ? p.regTime
+              : p.regTime
+              ? new Date(`${p.regDate} ${p.regTime}`)
+              : null;
+          const ts = time?.getTime() ?? date?.getTime() ?? 0;
+          return Number.isNaN(ts) ? 0 : ts;
+        };
+        return toTs(a) - toTs(b);
+      });
+
+    const FOOD_LABELS: Record<string, string> = {
+      normal: 'ทั่วไป',
+      islam: 'อิสลาม',
+    };
+
+    const rows = sorted.map((p, index) => ({
+      ลำดับ: index + 1,
+      ชื่อสกุล: p.name ?? '',
+      ตำแหน่ง: p.position ?? '',
+      หน่วยงาน: p.org ?? '',
+      โทรศัพท์: p.phone ?? '',
+      อีเมล: p.email ?? '',
+      อาหาร: FOOD_LABELS[p.foodType ?? ''] ?? '',
+      สถานะ: p.status ?? '',
+      วันที่ลงทะเบียน: p.regDate ?? '',
+      เวลาลงทะเบียน: (() => {
+        if (!p.regTime) return '';
+        const d =
+          p.regTime instanceof Date
+            ? p.regTime
+            : new Date(p.regTime as any);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toLocaleTimeString('th-TH', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      })(),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'participants');
+    const safeTitle =
+      event?.title?.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40) || 'participants';
+    XLSX.writeFile(workbook, `${safeTitle}.xlsx`);
+  };
 
   return (
     <>
@@ -290,13 +382,23 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
                 {event.title}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowParticipants(false)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="px-3 py-1.5 text-xs rounded-lg border border-emerald-300 text-emerald-700 bg-white hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={participants.length === 0 || loadingParticipants}
+              >
+                ส่งออก Excel
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowParticipants(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="p-4 flex flex-col gap-3">
