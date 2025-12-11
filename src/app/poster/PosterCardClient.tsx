@@ -310,14 +310,14 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
           </div>
         </div>
 
-        <div className="mt-5 flex items-center justify-between gap-3">
+        <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-3">
           <div className="flex flex-col items-center gap-1">
             <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
               <QRCode value={qrValue} size={96} />
             </div>
             <span className="text-[10px] text-gray-500 font-medium">scan ลงทะเบียน</span>
           </div>
-          <div className="grid grid-cols-2 gap-2 w-full max-w-xs ml-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:max-w-xs sm:ml-auto mt-4 sm:mt-0">
             <a
               href={`/register?eventId=${event.id}`}
               className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
