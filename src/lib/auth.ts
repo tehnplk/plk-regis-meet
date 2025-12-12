@@ -31,6 +31,8 @@ export async function getJWTToken(): Promise<string | null> {
             const payload = JSON.parse(payloadJson) as {
               exp?: number;
               providerId?: string;
+              fullName?: string;
+              orgName?: string;
             };
 
             const now = Math.floor(Date.now() / 1000);
@@ -39,6 +41,14 @@ export async function getJWTToken(): Promise<string | null> {
             if (!payload.exp || now < payload.exp) {
               // If this token already has providerId, prefer it as a privileged token
               if (payload.providerId) {
+                // If this is an older token without fullName, try to refresh it from session.
+                // This ensures audit fields like providerFullNameCreated are populated.
+                if (!payload.fullName || !payload.orgName) {
+                  const refreshed = await tryFetch('/api/auth/token');
+                  if (refreshed) {
+                    return refreshed;
+                  }
+                }
                 return stored;
               }
 

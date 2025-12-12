@@ -53,6 +53,8 @@ export async function GET(
         posTestLink: true,
         registerMethod: true,
         providerIdCreated: true,
+        providerFullNameCreated: true,
+        providerOrgNameCreated: true,
         datetimeCreated: true,
         participants: true,
       },

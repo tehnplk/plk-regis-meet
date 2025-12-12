@@ -38,6 +38,9 @@ export default async function PosterPage({
             preTestLink: true,
             posTestLink: true,
             docLink: true,
+            providerIdCreated: true,
+            providerFullNameCreated: true,
+            providerOrgNameCreated: true,
           },
         })
       : null;
@@ -53,7 +56,14 @@ export default async function PosterPage({
           </div>
         )}
 
-        {event && <PosterCardClient event={{...event, status: event.status as EventStatus}} />}
+        {event && (
+          <PosterCardClient
+            event={{
+              ...event,
+              status: event.status as EventStatus,
+            }}
+          />
+        )}
       </main>
     </div>
   );

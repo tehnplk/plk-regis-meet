@@ -32,6 +32,8 @@ export interface Event {
   secretPass?: string | null;
   registerMethod?: number; // 1=provider_id only, 2=form only, 3=both
   providerIdCreated?: string | null;
+  providerFullNameCreated?: string | null;
+  providerOrgNameCreated?: string | null;
   datetimeCreated?: string | Date;
 }
 

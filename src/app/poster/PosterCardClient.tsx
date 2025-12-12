@@ -37,6 +37,9 @@ type PosterEvent = {
   preTestLink?: string | null;
   posTestLink?: string | null;
   secretPass?: string | null;
+  providerIdCreated?: string | null;
+  providerFullNameCreated?: string | null;
+  providerOrgNameCreated?: string | null;
 };
 
 const accentPalettes = [
@@ -436,6 +439,23 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             />
           </div>
         </div>
+
+        {(event.providerFullNameCreated || event.providerOrgNameCreated) && (
+          <div className="mt-2 text-xs text-gray-500">
+            {event.providerFullNameCreated && (
+              <div>
+                ผู้สร้าง:{' '}
+                <span className="text-gray-700">{event.providerFullNameCreated}</span>
+              </div>
+            )}
+            {event.providerOrgNameCreated && (
+              <div>
+                หน่วยงาน:{' '}
+                <span className="text-gray-700">{event.providerOrgNameCreated}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </article>
 

@@ -81,6 +81,8 @@ export async function POST(request: Request) {
   };
 
   let providerIdCreated: string | null = null;
+  let providerFullNameCreated: string | null = null;
+  let providerOrgNameCreated: string | null = null;
   const token = getTokenFromRequest(request);
   if (!token) {
     return new NextResponse('Unauthorized', { status: 401 });
@@ -92,6 +94,8 @@ export async function POST(request: Request) {
   }
   
   providerIdCreated = payload.providerId ?? null;
+  providerFullNameCreated = payload.fullName ?? null;
+  providerOrgNameCreated = payload.orgName ?? null;
 
   const numericCapacity =
     typeof capacity === 'string' ? Number(capacity) : capacity;
@@ -140,6 +144,8 @@ export async function POST(request: Request) {
         posTestLink,
         registerMethod: registerMethod ?? 3,
         providerIdCreated: providerIdCreated ?? null,
+        providerFullNameCreated: providerFullNameCreated ?? null,
+        providerOrgNameCreated: providerOrgNameCreated ?? null,
         datetimeCreated: new Date(),
       },
     });
