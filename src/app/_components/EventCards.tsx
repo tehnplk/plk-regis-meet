@@ -121,10 +121,10 @@ export const EventCards = ({
                     href={`/poster?eventId=${event.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors shadow-sm bg-emerald-600 text-white hover:bg-emerald-700 flex-1 cursor-pointer"
+                    className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors shadow-sm bg-blue-600 text-white hover:bg-blue-700 flex-1 cursor-pointer"
                   >
-                    <FileText size={16} />
-                    <span>รายละเอียด</span>
+                    <UserPlus size={16} />
+                    <span>คลิกลงทะเบียน</span>
                   </a>
                 </div>
               </div>
