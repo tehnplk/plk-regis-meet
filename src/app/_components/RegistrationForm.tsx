@@ -6,6 +6,7 @@ import { CheckCircle, UserPlus } from 'lucide-react';
 import { getJWTToken } from '@/lib/auth';
 import { toast } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 
 // Calculate distance between two coordinates using Haversine formula
 function getDistanceMeters(
@@ -160,7 +161,10 @@ export const RegistrationForm = ({
     event.preventDefault();
 
     if (!eventId) {
-      window.alert('ไม่พบรหัสงานสำหรับการลงทะเบียน');
+      await Swal.fire({
+        icon: 'error',
+        title: 'ไม่พบรหัสงานสำหรับการลงทะเบียน',
+      });
       return;
     }
 
@@ -175,8 +179,11 @@ export const RegistrationForm = ({
 
     const phone = phoneRaw.replace(/\D/g, '');
 
-    if (!name || !org || !phoneRaw) {
-      window.alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+    if (!name || !org || !phoneRaw || !email) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน',
+      });
       return;
     }
 
@@ -186,7 +193,10 @@ export const RegistrationForm = ({
     }
 
     if (!foodType) {
-      window.alert('กรุณาเลือกประเภทอาหาร');
+      await Swal.fire({
+        icon: 'warning',
+        title: 'กรุณาเลือกประเภทอาหาร',
+      });
       return;
     }
 
@@ -214,7 +224,8 @@ export const RegistrationForm = ({
       });
 
       if (!res.ok) {
-        throw new Error('Failed to register');
+        const errorText = await res.text().catch(() => '');
+        throw new Error(`Failed to register: ${res.status} ${errorText}`);
       }
 
       const successText =
@@ -222,10 +233,22 @@ export const RegistrationForm = ({
           ? `ลงทะเบียนสำเร็จสำหรับงาน: ${eventTitle}`
           : 'ลงทะเบียนสำเร็จ';
       toast.success(successText);
+      await Swal.fire({
+        icon: 'success',
+        title: 'ลงทะเบียนสำเร็จ',
+        text: successText,
+        timer: 1200,
+        showConfirmButton: false,
+      });
       setTimeout(() => onSubmitted?.(), 1200);
     } catch (error) {
       console.error(error);
-      window.alert('ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง');
+      const message = error instanceof Error ? error.message : 'ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง';
+      await Swal.fire({
+        icon: 'error',
+        title: 'ไม่สามารถลงทะเบียนได้',
+        text: message,
+      });
     }
   };
 

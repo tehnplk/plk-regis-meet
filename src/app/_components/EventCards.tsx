@@ -119,8 +119,6 @@ export const EventCards = ({
                   </div>
                   <a
                     href={`/poster?eventId=${event.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors shadow-sm bg-blue-600 text-white hover:bg-blue-700 flex-1 cursor-pointer"
                   >
                     <UserPlus size={16} />
