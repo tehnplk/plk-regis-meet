@@ -89,6 +89,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [participantsError, setParticipantsError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [participantsTab, setParticipantsTab] = useState<'list' | 'summary'>('list');
 
   useEffect(() => {
     if (!showParticipants) return;
@@ -164,10 +165,9 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
     [filteredParticipants],
   );
 
-  const handleExportExcel = async () => {
-    if (!participants || participants.length === 0) {
-      return;
-    }
+  const confirmExport = async () => {
+    if (!participants || participants.length === 0) return false;
+
     const rawSecret = (event.secretPass ?? '').trim();
     const secret = rawSecret === '' ? '12345678' : rawSecret;
 
@@ -185,9 +185,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
       cancelButtonText: 'ยกเลิก',
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return false;
 
     const value = (result.value ?? '').trim();
     if (value !== secret) {
@@ -196,6 +194,14 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
         title: 'รหัสผ่านไม่ถูกต้อง',
         text: 'ไม่สามารถส่งออกข้อมูลได้',
       });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleExportParticipantsExcel = async () => {
+    if (!(await confirmExport())) {
       return;
     }
 
@@ -251,6 +257,25 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
     const safeTitle =
       event?.title?.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40) || 'participants';
     XLSX.writeFile(workbook, `${safeTitle}.xlsx`);
+  };
+
+  const handleExportSummaryExcel = async () => {
+    if (!orgSummary || orgSummary.length === 0) {
+      return;
+    }
+
+    const rows = orgSummary.map((item, index) => ({
+      ลำดับ: index + 1,
+      หน่วยงาน: item.org ?? '-',
+      จำนวน: item.count,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'summary');
+    const safeTitle =
+      event?.title?.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40) || 'summary';
+    XLSX.writeFile(workbook, `${safeTitle}-summary.xlsx`);
   };
 
   return (
@@ -362,7 +387,10 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             </a>
             <button
               type="button"
-              onClick={() => setShowParticipants(true)}
+              onClick={() => {
+                setParticipantsTab('list');
+                setShowParticipants(true);
+              }}
               className="w-full py-2 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-emerald-600 transition-colors text-center cursor-pointer"
             >
               ดูรายชื่อ
@@ -424,14 +452,6 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleExportExcel}
-                className="px-3 py-1.5 text-xs rounded-lg border border-emerald-300 text-emerald-700 bg-white hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={participants.length === 0 || loadingParticipants}
-              >
-                ส่งออก Excel
-              </button>
-              <button
-                type="button"
                 onClick={() => setShowParticipants(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
               >
@@ -441,84 +461,150 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
           </div>
 
           <div className="p-4 flex flex-col gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="ค้นหาชื่อ หรือ หน่วยงาน..."
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
-              />
+            <div className="flex items-end justify-between gap-3 border-b border-gray-200">
+              <div className="flex items-center gap-6">
+                <button
+                  type="button"
+                  onClick={() => setParticipantsTab('list')}
+                  className={`-mb-px px-1 pb-2 text-sm font-semibold border-b-2 transition-colors ${
+                    participantsTab === 'list'
+                      ? 'border-emerald-600 text-emerald-700'
+                      : 'border-transparent text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  รายชื่อ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setParticipantsTab('summary')}
+                  className={`-mb-px px-1 pb-2 text-sm font-semibold border-b-2 transition-colors ${
+                    participantsTab === 'summary'
+                      ? 'border-emerald-600 text-emerald-700'
+                      : 'border-transparent text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  สรุป
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (participantsTab === 'summary') {
+                    void handleExportSummaryExcel();
+                    return;
+                  }
+                  void handleExportParticipantsExcel();
+                }}
+                className="mb-2 px-3 py-1.5 text-xs rounded-lg border border-emerald-300 text-emerald-700 bg-white hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={
+                  loadingParticipants ||
+                  (participantsTab === 'list' && participants.length === 0) ||
+                  (participantsTab === 'summary' && orgSummary.length === 0) ||
+                  !!participantsError
+                }
+              >
+                ส่งออก Excel
+              </button>
             </div>
 
-            <div className="border rounded-lg overflow-hidden">
-              <div className="max-h-[45vh] overflow-y-auto">
-                {loadingParticipants ? (
-                  <div className="p-4 text-sm text-gray-500">กำลังโหลดรายชื่อ...</div>
-                ) : participantsError ? (
-                  <div className="p-4 text-sm text-red-600">{participantsError}</div>
-                ) : filteredParticipants.length === 0 ? (
-                  <div className="p-4 text-sm text-gray-500 flex items-center gap-2">
-                    <Search size={16} className="text-gray-300" />
-                    ไม่พบข้อมูลผู้ลงทะเบียน
+            {participantsTab === 'list' ? (
+              <>
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="ค้นหาชื่อ หรือ หน่วยงาน..."
+                    className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                  />
+                </div>
+
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="max-h-[55vh] overflow-y-auto">
+                    {loadingParticipants ? (
+                      <div className="p-4 text-sm text-gray-500">กำลังโหลดรายชื่อ...</div>
+                    ) : participantsError ? (
+                      <div className="p-4 text-sm text-red-600">{participantsError}</div>
+                    ) : filteredParticipants.length === 0 ? (
+                      <div className="p-4 text-sm text-gray-500 flex items-center gap-2">
+                        <Search size={16} className="text-gray-300" />
+                        ไม่พบข้อมูลผู้ลงทะเบียน
+                      </div>
+                    ) : (
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                          <tr>
+                            <th className="px-4 py-3 w-12">ลำดับ</th>
+                            <th className="px-4 py-3">ชื่อ-นามสกุล</th>
+                            <th className="px-4 py-3">ตำแหน่ง</th>
+                            <th className="px-4 py-3">หน่วยงาน</th>
+                            <th className="px-4 py-3">เบอร์โทร</th>
+                            <th className="px-4 py-3 text-center">วันที่ลงทะเบียน</th>
+                            <th className="px-4 py-3 text-center">เวลาลงทะเบียน</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredParticipants.map((p, idx) => (
+                            <tr key={p.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
+                              <td className="px-4 py-2 text-gray-900">{maskName(p.name)}</td>
+                              <td className="px-4 py-2 text-gray-700">{p.position || '-'}</td>
+                              <td className="px-4 py-2 text-gray-700">{p.org || '-'}</td>
+                              <td className="px-4 py-2 text-gray-600">
+                                {p.phone ? maskPhone(p.phone) : '-'}
+                              </td>
+                              <td className="px-4 py-2 text-center text-gray-500 text-xs">
+                                {p.regDate || '-'}
+                              </td>
+                              <td className="px-4 py-2 text-center text-gray-500 text-xs">
+                                {p.regTime
+                                  ? new Date(p.regTime).toLocaleTimeString('th-TH', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })
+                                  : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
-                ) : (
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                      <tr>
-                        <th className="px-4 py-3 w-12">ลำดับ</th>
-                        <th className="px-4 py-3">ชื่อ-นามสกุล</th>
-                        <th className="px-4 py-3">ตำแหน่ง</th>
-                        <th className="px-4 py-3">หน่วยงาน</th>
-                        <th className="px-4 py-3">เบอร์โทร</th>
-                        <th className="px-4 py-3 text-center">วันที่ลงทะเบียน</th>
-                        <th className="px-4 py-3 text-center">เวลาลงทะเบียน</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {filteredParticipants.map((p, idx) => (
-                        <tr key={p.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
-                          <td className="px-4 py-2 text-gray-900">{maskName(p.name)}</td>
-                          <td className="px-4 py-2 text-gray-700">{p.position || '-'}</td>
-                          <td className="px-4 py-2 text-gray-700">{p.org || '-'}</td>
-                          <td className="px-4 py-2 text-gray-600">
-                            {p.phone ? maskPhone(p.phone) : '-'}
-                          </td>
-                          <td className="px-4 py-2 text-center text-gray-500 text-xs">{p.regDate || '-'}</td>
-                          <td className="px-4 py-2 text-center text-gray-500 text-xs">
-                            {p.regTime ? new Date(p.regTime).toLocaleTimeString('th-TH', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }) : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-              {!loadingParticipants &&
-                !participantsError &&
-                filteredParticipants.length > 0 &&
-                orgSummary.length > 0 && (
-                  <div className="px-4 py-3 border-t bg-gray-50 text-xs text-gray-700">
-                    <div className="font-semibold mb-1">สรุปตามหน่วยงาน</div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1">
-                      {orgSummary.map((item) => (
-                        <div
-                          key={item.org}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <span className="truncate">{item.org}</span>
-                          <span className="whitespace-nowrap">{item.count} คน</span>
-                        </div>
-                      ))}
+                </div>
+              </>
+            ) : (
+              <div className="border rounded-lg overflow-hidden">
+                <div className="max-h-[55vh] overflow-y-auto">
+                  {loadingParticipants ? (
+                    <div className="p-4 text-sm text-gray-500">กำลังโหลดสรุป...</div>
+                  ) : participantsError ? (
+                    <div className="p-4 text-sm text-red-600">{participantsError}</div>
+                  ) : orgSummary.length === 0 ? (
+                    <div className="p-4 text-sm text-gray-500">ไม่มีข้อมูลสำหรับสรุป</div>
+                  ) : (
+                    <div className="px-4 py-3 bg-gray-50 text-xs text-gray-700">
+                      <div className="font-semibold mb-1">สรุปตามหน่วยงาน</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1">
+                        {orgSummary.map((item) => (
+                          <div
+                            key={item.org}
+                            className="flex items-center justify-between gap-2"
+                          >
+                            <span className="truncate">{item.org}</span>
+                            <span className="whitespace-nowrap">{item.count} คน</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-            </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
