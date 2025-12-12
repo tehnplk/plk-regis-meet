@@ -94,6 +94,8 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [participantsTab, setParticipantsTab] = useState<'list' | 'summary'>('list');
 
+  const registeredCountForModal = participantsError || loadingParticipants ? event.registered : participants.length;
+
   useEffect(() => {
     if (!showParticipants) return;
 
@@ -468,6 +470,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
               <p className="text-base font-semibold text-gray-900">
                 {event.title}
               </p>
+              <p className="text-xs text-gray-400">ลงทะเบียนแล้ว {registeredCountForModal} คน</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -503,7 +506,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
                       : 'border-transparent text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  สรุป
+                  ยอดรวมรายหน่วยงาน
                 </button>
               </div>
 
