@@ -179,7 +179,7 @@ export const RegistrationForm = ({
 
     const phone = phoneRaw.replace(/\D/g, '');
 
-    if (!name || !org || !phoneRaw || !email) {
+    if (!name || !org || !phoneRaw) {
       await Swal.fire({
         icon: 'warning',
         title: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน',
@@ -233,13 +233,6 @@ export const RegistrationForm = ({
           ? `ลงทะเบียนสำเร็จสำหรับงาน: ${eventTitle}`
           : 'ลงทะเบียนสำเร็จ';
       toast.success(successText);
-      await Swal.fire({
-        icon: 'success',
-        title: 'ลงทะเบียนสำเร็จ',
-        text: successText,
-        timer: 1200,
-        showConfirmButton: false,
-      });
       setTimeout(() => onSubmitted?.(), 1200);
     } catch (error) {
       console.error(error);

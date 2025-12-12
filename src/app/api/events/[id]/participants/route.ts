@@ -78,9 +78,11 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     providerId?: string | null;
   };
 
-  if (!name || !org || !phone || !email) {
+  if (!name || !org || !phone) {
     return new NextResponse('Missing required fields', { status: 400 });
   }
+
+  const normalizedEmail = (email ?? '').trim();
 
   const normalizedFoodType = foodType === 'islam' ? 'islam' : 'normal';
   const normalizedStatus: 'confirmed' | 'pending' | 'cancelled' =
@@ -106,7 +108,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
         name,
         org,
         position: position ?? '',
-        email,
+        email: normalizedEmail,
         phone,
         providerId: providerId && providerId.trim() !== '' ? providerId : null,
         foodType: normalizedFoodType,
