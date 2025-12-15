@@ -41,6 +41,7 @@ export async function GET(
         latitude: true,
         longitude: true,
         enableCheckInRadius: true,
+        regis_closed: true,
         checkInRadiusMeters: true,
         registered: true,
         capacity: true,

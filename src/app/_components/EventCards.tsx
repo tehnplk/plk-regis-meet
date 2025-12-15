@@ -52,6 +52,25 @@ export const EventCards = ({
           const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
           const qrValue = `${baseUrl}/poster?eventId=${event.id}`;
           const daysUntil = getDaysUntil(event.beginDate);
+          const eventEndText = (event.endDate && event.endDate.trim() !== '' ? event.endDate : event.beginDate).trim();
+          const eventEndDate = eventEndText ? new Date(eventEndText) : null;
+          const isPastEvent = (() => {
+            if (!eventEndDate || Number.isNaN(eventEndDate.getTime())) return false;
+            const endOfDay = new Date(eventEndDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            return Date.now() > endOfDay.getTime();
+          })();
+
+          const effectiveStatus =
+            event.status === 'cancelled' || event.status === 'postponed' || event.status === 'closed'
+              ? event.status
+              : isPastEvent
+              ? 'closed'
+              : event.status;
+
+          const isAutoFull = event.status === 'full' || event.registered >= event.capacity;
+          const isRegisClosed = Boolean(event.regis_closed) || isAutoFull || isPastEvent;
+          const showStatusBadge = ['scheduled', 'postponed', 'cancelled', 'closed'].includes(effectiveStatus);
 
           return (
             <div
@@ -61,7 +80,18 @@ export const EventCards = ({
               <div className={`h-1 w-full bg-gradient-to-r ${palette.gradient}`} />
               <div className="p-5 flex-1">
                 <div className="flex justify-between items-start mb-3">
-                  <StatusBadge status={event.status} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    {showStatusBadge && <StatusBadge status={effectiveStatus} />}
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
+                        isRegisClosed
+                          ? 'border-rose-200 bg-rose-50 text-rose-700'
+                          : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      }`}
+                    >
+                      {isRegisClosed ? 'ปิดรับลงทะเบียน' : 'เปิดรับลงทะเบียน'}
+                    </span>
+                  </div>
                   <a
                     href={`/poster?eventId=${event.id}`}
                     target="_blank"
@@ -122,7 +152,7 @@ export const EventCards = ({
                     className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors shadow-sm bg-blue-600 text-white hover:bg-blue-700 flex-1 cursor-pointer"
                   >
                     <UserPlus size={16} />
-                    <span>คลิกลงทะเบียน</span>
+                    <span>{isRegisClosed ? 'ดูรายละเอียด' : 'คลิกลงทะเบียน'}</span>
                   </a>
                 </div>
               </div>

@@ -89,12 +89,6 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     status === 'pending' ? 'pending' : status === 'cancelled' ? 'cancelled' : 'confirmed';
 
   try {
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
-
-    if (!event) {
-      return new NextResponse('Event not found', { status: 404 });
-    }
-
     const now = new Date();
     const regDate = now.toLocaleDateString('th-TH', {
       day: '2-digit',
@@ -102,30 +96,76 @@ export async function POST(request: Request, { params }: { params: Promise<Param
       year: 'numeric',
     });
 
-    const participant = await prisma.participant.create({
-      data: {
-        eventId,
-        name,
-        org,
-        position: position ?? '',
-        email: normalizedEmail,
-        phone,
-        providerId: providerId && providerId.trim() !== '' ? providerId : null,
-        foodType: normalizedFoodType,
-        status: normalizedStatus,
-        regDate,
-        regTime: now,
-      },
+    const result = await prisma.$transaction(async (tx) => {
+      const event = await tx.event.findUnique({
+        where: { id: eventId },
+        select: {
+          id: true,
+          regis_closed: true,
+          registered: true,
+          capacity: true,
+          status: true,
+          beginDate: true,
+          endDate: true,
+        },
+      });
+
+      if (!event) {
+        return { error: new NextResponse('Event not found', { status: 404 }) } as const;
+      }
+
+      const endText = (event.endDate && event.endDate.trim() !== '' ? event.endDate : event.beginDate).trim();
+      const endDate = endText ? new Date(endText) : null;
+      const isPastEvent = (() => {
+        if (!endDate || Number.isNaN(endDate.getTime())) return false;
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        return Date.now() > endOfDay.getTime();
+      })();
+
+      const isFull = event.status === 'full' || event.registered >= event.capacity;
+      if (event.regis_closed || isFull || isPastEvent) {
+        // If already full and not yet marked regis_closed, mark it once.
+        if (!event.regis_closed && (isFull || isPastEvent)) {
+          await tx.event.update({ where: { id: eventId }, data: { regis_closed: true } });
+        }
+        return { error: new NextResponse('Registration closed', { status: 403 }) } as const;
+      }
+
+      const willBeFull = event.registered + 1 >= event.capacity;
+
+      const participant = await tx.participant.create({
+        data: {
+          eventId,
+          name,
+          org,
+          position: position ?? '',
+          email: normalizedEmail,
+          phone,
+          providerId: providerId && providerId.trim() !== '' ? providerId : null,
+          foodType: normalizedFoodType,
+          status: normalizedStatus,
+          regDate,
+          regTime: now,
+        },
+      });
+
+      await tx.event.update({
+        where: { id: eventId },
+        data: {
+          registered: { increment: 1 },
+          ...(willBeFull ? { regis_closed: true } : {}),
+        },
+      });
+
+      return { participant } as const;
     });
 
-    await prisma.event.update({
-      where: { id: eventId },
-      data: {
-        registered: { increment: 1 },
-      },
-    });
+    if ('error' in result) {
+      return result.error;
+    }
 
-    return NextResponse.json({ participant }, { status: 201 });
+    return NextResponse.json({ participant: result.participant }, { status: 201 });
   } catch (error) {
     console.error(error);
     return new NextResponse('Internal Server Error', { status: 500 });

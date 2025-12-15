@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { RegistrationForm, formatThaiDate } from '../../_components/event-ui';
 import type { Event } from '../../_data/database';
 import { getJWTToken } from '@/lib/auth';
+import { AlertTriangle } from 'lucide-react';
 
 type InitialProfile = {
   name?: string;
@@ -27,6 +28,17 @@ export default function RegisterByFormPageClient({
   const [event, setEvent] = useState<Event | undefined>();
   const [loading, setLoading] = useState<boolean>(!!eventId);
   const [error, setError] = useState<string | null>(null);
+
+  const isPastEvent = (() => {
+    const e = event;
+    if (!e) return false;
+    const endText = (e.endDate && e.endDate.trim() !== '' ? e.endDate : e.beginDate).trim();
+    const endDate = endText ? new Date(endText) : null;
+    if (!endDate || Number.isNaN(endDate.getTime())) return false;
+    const endOfDay = new Date(endDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    return Date.now() > endOfDay.getTime();
+  })();
 
   useEffect(() => {
     if (!eventId) {
@@ -79,6 +91,12 @@ export default function RegisterByFormPageClient({
             <p className="text-lg md:text-xl font-bold text-emerald-900">
               กิจกรรม: {event.title}
             </p>
+            {Boolean(event.regis_closed) || Boolean(event.status === 'full' || event.registered >= event.capacity) || isPastEvent ? (
+              <div className="bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start gap-2 text-sm text-rose-700">
+                <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                <span>กิจกรรมนี้ปิดรับลงทะเบียนแล้ว</span>
+              </div>
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">วันที่ / เวลา</p>
@@ -113,6 +131,11 @@ export default function RegisterByFormPageClient({
           eventTitle={event?.title}
           initialProfile={initialProfile}
           onSubmitted={() => router.push(eventId ? `/poster?eventId=${eventId}` : '/')}
+          regisClosed={
+            Boolean(event?.regis_closed) ||
+            Boolean(event && (event.status === 'full' || event.registered >= event.capacity))
+            || isPastEvent
+          }
           enableCheckInRadius={event?.enableCheckInRadius}
           checkInRadiusMeters={event?.checkInRadiusMeters}
           eventLatitude={event?.latitude}

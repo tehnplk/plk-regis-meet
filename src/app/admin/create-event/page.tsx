@@ -23,6 +23,8 @@ export default function CreateEventPage() {
   const [initialEvent, setInitialEvent] = useState<Event | undefined>();
   const [loading, setLoading] = useState<boolean>(isEdit);
   const [error, setError] = useState<string | null>(null);
+  const [regisClosed, setRegisClosed] = useState<boolean>(false);
+  const [savingRegisClosed, setSavingRegisClosed] = useState<boolean>(false);
 
   const providerId = useMemo(() => {
     const rawProfile = (session?.user as any)?.profile as string | undefined;
@@ -93,6 +95,46 @@ export default function CreateEventPage() {
     load();
   }, [isEdit, eventId, providerId, sessionStatus]);
 
+  useEffect(() => {
+    setRegisClosed(Boolean(initialEvent?.regis_closed));
+  }, [initialEvent]);
+
+  const updateRegisClosed = async (nextValue: boolean) => {
+    if (!eventId || Number.isNaN(eventId)) return;
+    setSavingRegisClosed(true);
+    const prevValue = regisClosed;
+    setRegisClosed(nextValue);
+
+    try {
+      const token = await getJWTToken();
+      if (!token) {
+        throw new Error('กรุณาเข้าสู่ระบบใหม่ (token หาย)');
+      }
+
+      const res = await fetch(`/api/events/${eventId}/regis-closed`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ regis_closed: nextValue }),
+      });
+
+      if (!res.ok) {
+        throw new Error('บันทึกสถานะลงทะเบียนไม่สำเร็จ');
+      }
+
+      setInitialEvent((prev) => (prev ? { ...prev, regis_closed: nextValue } : prev));
+      toast.success(nextValue ? 'ปิดรับลงทะเบียนแล้ว' : 'เปิดรับลงทะเบียนแล้ว');
+    } catch (e) {
+      console.error(e);
+      setRegisClosed(prevValue);
+      toast.error('ไม่สามารถอัปเดตสถานะลงทะเบียนได้');
+    } finally {
+      setSavingRegisClosed(false);
+    }
+  };
+
   const title = isEdit ? 'แก้ไขกิจกรรม' : 'สร้างกิจกรรมใหม่';
   const description = isEdit
     ? 'หน้าสำหรับแก้ไขรายละเอียดกิจกรรมที่มีอยู่'
@@ -117,6 +159,27 @@ export default function CreateEventPage() {
 
         {!loading && !error && (!isEdit || initialEvent) && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+            {isEdit && (
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-slate-50 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">สถานะการลงทะเบียน</p>
+                  <p className="text-xs text-gray-600">
+                    {regisClosed ? 'ปิดให้ลงทะเบียน' : 'เปิดให้ลงทะเบียน'}
+                  </p>
+                </div>
+                <label className="inline-flex items-center gap-2">
+                  <span className="text-xs text-gray-600">ปิด</span>
+                  <input
+                    type="checkbox"
+                    checked={!regisClosed}
+                    disabled={savingRegisClosed}
+                    onChange={(e) => updateRegisClosed(!e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600">เปิด</span>
+                </label>
+              </div>
+            )}
             <EventForm
               mode={isEdit ? 'edit' : 'create'}
               eventId={eventId}

@@ -33,6 +33,7 @@ export const RegistrationForm = ({
   eventTitle,
   onSubmitted,
   initialProfile,
+  regisClosed,
   enableCheckInRadius,
   checkInRadiusMeters,
   eventLatitude,
@@ -50,6 +51,7 @@ export const RegistrationForm = ({
     email?: string;
     phone?: string;
   };
+  regisClosed?: boolean;
   enableCheckInRadius?: boolean;
   checkInRadiusMeters?: number | null;
   eventLatitude?: number | null;
@@ -84,6 +86,8 @@ export const RegistrationForm = ({
   const [isWithinRadius, setIsWithinRadius] = useState<boolean>(true);
   const [distanceFromEvent, setDistanceFromEvent] = useState<number | null>(null);
   const [loadingLocation, setLoadingLocation] = useState<boolean>(false);
+
+  const isRegisClosed = Boolean(regisClosed);
 
   // Check if radius restriction is enabled
   const radiusRestrictionEnabled =
@@ -159,6 +163,14 @@ export const RegistrationForm = ({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isRegisClosed) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'ปิดรับลงทะเบียนแล้ว',
+      });
+      return;
+    }
 
     if (!eventId) {
       await Swal.fire({
@@ -251,6 +263,13 @@ export const RegistrationForm = ({
       className="p-6 space-y-5 max-w-4xl mx-auto bg-white rounded-xl border border-gray-200 shadow-sm"
     >
       <input type="hidden" name="providerId" value={providerIdFromSession ?? ''} />
+
+      {isRegisClosed && (
+        <div className="bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start gap-2 text-sm text-rose-700">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <span>กิจกรรมนี้ปิดรับลงทะเบียนแล้ว</span>
+        </div>
+      )}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
           ชื่อ-นามสกุล <span className="text-red-500">*</span>
@@ -401,9 +420,9 @@ export const RegistrationForm = ({
       <div className="pt-2 flex gap-3 justify-end border-t border-gray-100 mt-6">
         <button
           type="submit"
-          disabled={!!(radiusRestrictionEnabled && (!isWithinRadius || loadingLocation))}
+          disabled={isRegisClosed || !!(radiusRestrictionEnabled && (!isWithinRadius || loadingLocation))}
           className={`px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2 text-sm ${
-            radiusRestrictionEnabled && (!isWithinRadius || loadingLocation)
+            isRegisClosed || (radiusRestrictionEnabled && (!isWithinRadius || loadingLocation))
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'text-white bg-blue-600 hover:bg-blue-700 hover:shadow cursor-pointer'
           }`}

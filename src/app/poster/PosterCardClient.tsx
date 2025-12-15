@@ -28,6 +28,7 @@ type PosterEvent = {
   location: string;
   latitude?: number | null;
   longitude?: number | null;
+  regis_closed?: boolean;
   registered: number;
   capacity: number;
   status: EventStatus;
@@ -82,7 +83,26 @@ function maskPhone(phone: string): string {
 
 export default function PosterCardClient({ event }: { event: PosterEvent }) {
   const palette = accentPalettes[0];
-  const isUnavailable = ['full', 'closed', 'cancelled', 'postponed'].includes(event.status);
+  const eventEndText = (event.endDate && event.endDate.trim() !== '' ? event.endDate : event.beginDate).trim();
+  const eventEndDate = eventEndText ? new Date(eventEndText) : null;
+  const isPastEvent = (() => {
+    if (!eventEndDate || Number.isNaN(eventEndDate.getTime())) return false;
+    const endOfDay = new Date(eventEndDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    return Date.now() > endOfDay.getTime();
+  })();
+
+  const effectiveStatus =
+    event.status === 'cancelled' || event.status === 'postponed' || event.status === 'closed'
+      ? event.status
+      : isPastEvent
+      ? 'closed'
+      : event.status;
+
+  const isAutoFull = event.status === 'full' || event.registered >= event.capacity;
+  const isRegisClosed = Boolean(event.regis_closed) || isAutoFull || isPastEvent;
+  const isUnavailable = ['closed', 'cancelled', 'postponed'].includes(effectiveStatus) || isRegisClosed;
+  const showStatusBadge = ['scheduled', 'postponed', 'cancelled', 'closed'].includes(effectiveStatus);
   const progress = Math.min((event.registered / event.capacity) * 100, 100);
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
   const qrValue = `${baseUrl}/poster?eventId=${event.id}`;
@@ -291,7 +311,16 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
         <div className={`h-1 w-full bg-gradient-to-r ${palette.gradient}`} />
         <div className="p-5 flex-1">
           <div className="flex justify-between items-start mb-3">
-            <StatusBadge status={event.status} />
+            {showStatusBadge ? <StatusBadge status={effectiveStatus} /> : <span />}
+            <span
+              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
+                isRegisClosed
+                  ? 'border-rose-200 bg-rose-50 text-rose-700'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              }`}
+            >
+              {isRegisClosed ? 'ปิดรับลงทะเบียน' : 'เปิดรับลงทะเบียน'}
+            </span>
           </div>
           <h1 className="text-3xl font-black text-gray-900 mb-3 flex items-center gap-2">
             <FileText className="w-6 h-6 text-emerald-500 shrink-0" />
@@ -366,14 +395,17 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:max-w-xs sm:ml-auto mt-4 sm:mt-0">
             <a
-              href={`/register?eventId=${event.id}`}
+              href={isUnavailable ? undefined : `/register?eventId=${event.id}`}
+              onClick={(e) => isUnavailable && e.preventDefault()}
               className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-sm ${
                 isUnavailable
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
-              {event.status === 'cancelled' ? (
+              {isRegisClosed ? (
+                <XCircle size={16} />
+              ) : event.status === 'cancelled' ? (
                 <XCircle size={16} />
               ) : event.status === 'postponed' ? (
                 <AlertTriangle size={16} />
@@ -381,7 +413,9 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
                 <UserPlus size={16} />
               )}
               <span>
-                {event.status === 'cancelled'
+                {isRegisClosed
+                  ? 'ปิดรับลงทะเบียน'
+                  : event.status === 'cancelled'
                   ? 'ยกเลิกแล้ว'
                   : event.status === 'postponed'
                   ? 'เลื่อน'

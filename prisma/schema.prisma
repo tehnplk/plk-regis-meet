@@ -64,6 +64,7 @@ model Event {
   latitude    Float?
   longitude   Float?
   enableCheckInRadius Boolean @default(false)
+  regis_closed Boolean @default(false)
   checkInRadiusMeters Int?
   registered  Int
   capacity    Int

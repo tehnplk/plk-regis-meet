@@ -29,6 +29,7 @@ function getDistanceMeters(
 interface RegisterEntryClientProps {
   eventId?: string;
   eventTitle?: string | null;
+  regisClosed?: boolean;
   allowProviderId: boolean;
   allowForm: boolean;
   byFormHref: string;
@@ -42,6 +43,7 @@ interface RegisterEntryClientProps {
 export default function RegisterEntryClient({
   eventId,
   eventTitle,
+  regisClosed,
   allowProviderId,
   allowForm,
   byFormHref,
@@ -130,9 +132,10 @@ export default function RegisterEntryClient({
     );
   }, [radiusRestrictionEnabled, eventLatitude, eventLongitude, checkInRadiusMeters]);
 
+  const isRegisClosed = Boolean(regisClosed);
   const isDisabled = !!(radiusRestrictionEnabled && (!isWithinRadius || loadingLocation));
-  const providerDisabled = !allowProviderId || isDisabled;
-  const formDisabled = !allowForm || isDisabled;
+  const providerDisabled = !allowProviderId || isDisabled || isRegisClosed;
+  const formDisabled = !allowForm || isDisabled || isRegisClosed;
 
   return (
     <main className="max-w-4xl mx-auto p-6 space-y-6">
@@ -142,6 +145,13 @@ export default function RegisterEntryClient({
           <p className="text-2xl font-black text-emerald-950">
             {eventTitle ?? `#${eventId}`}
           </p>
+        </div>
+      )}
+
+      {isRegisClosed && (
+        <div className="bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start gap-2 text-sm text-rose-700">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <span>กิจกรรมนี้ปิดรับลงทะเบียนแล้ว</span>
         </div>
       )}
 

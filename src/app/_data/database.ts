@@ -20,6 +20,7 @@ export interface Event {
   latitude?: number | null;
   longitude?: number | null;
   enableCheckInRadius?: boolean;
+  regis_closed?: boolean;
   checkInRadiusMeters?: number | null;
   registered: number;
   capacity: number;
@@ -58,7 +59,7 @@ export const STATUS_LABELS: Record<EventStatus | ParticipantStatus, string> = {
   confirmed: "ยืนยันแล้ว",
   full: "ที่นั่งเต็ม",
   pending: "รอชำระเงิน",
-  closed: "ปิดรับสมัคร",
+  closed: "จบกิจกรรม",
   cancelled: "ยกเลิก",
   postponed: "เลื่อน",
 };
