@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header, StatusBadge, DateDisplay } from '../_components/event-ui';
 import type { Event, Participant } from '../_data/database';
+import { STATUS_LABELS } from '../_data/database';
 import { getJWTToken } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 import { Check, Pencil, Trash2, X, MapPin, Clock3, FileText, AlignLeft } from 'lucide-react';
@@ -827,12 +828,12 @@ function ParticipantsModal({
                               value={current.status}
                               onChange={(e) => handleFieldChange('status', e.target.value)}
                             >
-                              <option value="confirmed">confirmed</option>
-                              <option value="pending">pending</option>
-                              <option value="cancelled">cancelled</option>
+                              <option value="pending_review">รอพิจารณา</option>
+                              <option value="approved">อนุมัติ</option>
+                              <option value="rejected">ไม่อนุมัติ</option>
                             </select>
                           ) : (
-                            current.status
+                            STATUS_LABELS[current.status] ?? current.status
                           )}
                         </div>
 

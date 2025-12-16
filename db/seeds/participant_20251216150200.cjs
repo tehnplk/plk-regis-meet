@@ -121,7 +121,7 @@ async function main() {
         phone: '-',
         providerId: null,
         foodType: null,
-        status: 'confirmed',
+        status: 'pending_review',
         regDate,
         regTime: now,
       });

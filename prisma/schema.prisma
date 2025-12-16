@@ -85,6 +85,12 @@ model Event {
   participants Participant[]
 }
 
+enum ParticipantStatus {
+  pending_review
+  approved
+  rejected
+}
+
 model Participant {
   id         Int      @id @default(autoincrement())
   eventId    Int
@@ -97,7 +103,7 @@ model Participant {
   phone      String
   providerId String?
   foodType   String?
-  status     String
+  status     ParticipantStatus @default(pending_review)
   regDate    String
   regTime    DateTime @default(now())
 

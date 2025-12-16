@@ -1,6 +1,6 @@
-import type { EventStatus } from '../_data/database';
+import type { EventStatus, ParticipantStatus } from '../_data/database';
 
-export const STATUS_STYLES: Record<EventStatus | 'confirmed' | 'pending' | 'cancelled', string> = {
+export const STATUS_STYLES: Record<EventStatus | ParticipantStatus, string> = {
   scheduled: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   open: 'bg-green-100 text-green-700 border-green-200',
   confirmed: 'bg-green-100 text-green-700 border-green-200',
@@ -9,6 +9,10 @@ export const STATUS_STYLES: Record<EventStatus | 'confirmed' | 'pending' | 'canc
   closed: 'bg-gray-100 text-gray-600 border-gray-200',
   cancelled: 'bg-red-100 text-red-700 border-red-200',
   postponed: 'bg-purple-100 text-purple-700 border-purple-200',
+
+  pending_review: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  approved: 'bg-green-100 text-green-700 border-green-200',
+  rejected: 'bg-red-100 text-red-700 border-red-200',
 };
 
 export const TH_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];

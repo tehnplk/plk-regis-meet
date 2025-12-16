@@ -8,7 +8,7 @@ export type EventStatus =
   | "cancelled"
   | "postponed";
 
-export type ParticipantStatus = "confirmed" | "pending" | "cancelled";
+export type ParticipantStatus = "pending_review" | "approved" | "rejected";
 
 export interface Event {
   id: number;
@@ -67,5 +67,8 @@ export const STATUS_LABELS: Record<EventStatus | ParticipantStatus, string> = {
   closed: "จบกิจกรรม",
   cancelled: "ยกเลิก",
   postponed: "เลื่อน",
+  pending_review: "รอพิจารณา",
+  approved: "อนุมัติ",
+  rejected: "ไม่อนุมัติ",
 };
 

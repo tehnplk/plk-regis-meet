@@ -103,7 +103,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
 
   const normalizedEmail = email;
   const normalizedFoodType = foodTypeRaw === 'islam' ? 'islam' : 'normal';
-  const normalizedStatus: 'confirmed' | 'pending' | 'cancelled' = 'confirmed';
+  const normalizedStatus: 'pending_review' | 'approved' | 'rejected' = 'pending_review';
 
   const MAX_DOC_BYTES = 10 * 1024 * 1024;
   const allowedMimes = new Set(['application/pdf', 'image/jpeg', 'image/png']);
@@ -290,7 +290,7 @@ export async function PUT(request: Request, { params }: { params: Promise<Params
     email?: string;
     phone?: string;
     foodType?: 'normal' | 'islam';
-    status?: 'confirmed' | 'pending' | 'cancelled';
+    status?: 'pending_review' | 'approved' | 'rejected';
   };
 
   if (!participantId) {
@@ -298,8 +298,8 @@ export async function PUT(request: Request, { params }: { params: Promise<Params
   }
 
   const normalizedFoodType = foodType === 'islam' ? 'islam' : 'normal';
-  const normalizedStatus: 'confirmed' | 'pending' | 'cancelled' =
-    status === 'pending' ? 'pending' : status === 'cancelled' ? 'cancelled' : 'confirmed';
+  const normalizedStatus: 'pending_review' | 'approved' | 'rejected' =
+    status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending_review';
 
   try {
     const existing = await prisma.participant.findUnique({
