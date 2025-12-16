@@ -1,8 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import path from 'path';
+
+const dbPath = path.resolve(process.cwd(), 'db', 'events.db');
+const dbUrl = `file:${dbPath.replace(/\\/g, '/')}`;
 
 const adapter = new PrismaBetterSqlite3({
-  url: 'file:./db/events.db',
+  url: dbUrl,
 });
 
 const globalForPrisma = globalThis as unknown as {
