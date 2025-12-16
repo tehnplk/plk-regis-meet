@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     preTestLink,
     posTestLink,
     registerMethod,
+    needOriginApprovePaper,
   } = body as {
     title?: string;
     beginDate?: string;
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
     preTestLink?: string | null;
     posTestLink?: string | null;
     registerMethod?: number;
+    needOriginApprovePaper?: boolean;
   };
 
   let providerIdCreated: string | null = null;
@@ -134,6 +136,7 @@ export async function POST(request: Request) {
         longitude: numericLongitude,
         enableCheckInRadius: Boolean(enableCheckInRadius),
         checkInRadiusMeters: numericCheckInRadius,
+        needOriginApprovePaper: Boolean(needOriginApprovePaper),
         registered: 0,
         capacity: numericCapacity,
         status: eventStatus,

@@ -21,6 +21,7 @@ export interface Event {
   longitude?: number | null;
   enableCheckInRadius?: boolean;
   regis_closed?: boolean;
+  needOriginApprovePaper?: boolean;
   checkInRadiusMeters?: number | null;
   registered: number;
   capacity: number;
@@ -51,6 +52,10 @@ export interface Participant {
   status: ParticipantStatus;
   regDate: string;
   regTime: string | Date;
+  originDocPath?: string | null;
+  originDocMime?: string | null;
+  originDocName?: string | null;
+  originDocUploadedAt?: string | Date | null;
 }
 
 export const STATUS_LABELS: Record<EventStatus | ParticipantStatus, string> = {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent, useMemo } from 'react';
-import { MapPin, AlertTriangle } from 'lucide-react';
+import { MapPin, AlertTriangle, Upload } from 'lucide-react';
 import { CheckCircle, UserPlus } from 'lucide-react';
 import { getJWTToken } from '@/lib/auth';
 import { toast } from 'react-hot-toast';
@@ -34,6 +34,7 @@ export const RegistrationForm = ({
   onSubmitted,
   initialProfile,
   regisClosed,
+  needOriginApprovePaper,
   enableCheckInRadius,
   checkInRadiusMeters,
   eventLatitude,
@@ -52,6 +53,7 @@ export const RegistrationForm = ({
     phone?: string;
   };
   regisClosed?: boolean;
+  needOriginApprovePaper?: boolean;
   enableCheckInRadius?: boolean;
   checkInRadiusMeters?: number | null;
   eventLatitude?: number | null;
@@ -86,6 +88,9 @@ export const RegistrationForm = ({
   const [isWithinRadius, setIsWithinRadius] = useState<boolean>(true);
   const [distanceFromEvent, setDistanceFromEvent] = useState<number | null>(null);
   const [loadingLocation, setLoadingLocation] = useState<boolean>(false);
+
+  const [docError, setDocError] = useState<string | null>(null);
+  const [docName, setDocName] = useState<string>('');
 
   const isRegisClosed = Boolean(regisClosed);
 
@@ -164,6 +169,8 @@ export const RegistrationForm = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    setDocError(null);
+
     if (isRegisClosed) {
       await Swal.fire({
         icon: 'warning',
@@ -212,27 +219,39 @@ export const RegistrationForm = ({
       return;
     }
 
+    const originDoc = formData.get('originDoc');
+    const isDocRequired = Boolean(needOriginApprovePaper);
+    if (isDocRequired) {
+      if (!(originDoc instanceof File) || originDoc.size === 0) {
+        setDocError('กรุณาแนบเอกสาร (pdf/jpg/png)');
+        return;
+      }
+    }
+
     try {
       const token = await getJWTToken();
       if (!token) {
         throw new Error('Authentication required');
       }
 
+      const multipart = new FormData();
+      multipart.set('name', name);
+      multipart.set('org', org);
+      multipart.set('position', position);
+      multipart.set('email', email);
+      multipart.set('phone', phone);
+      multipart.set('providerId', providerId);
+      multipart.set('foodType', foodType);
+      if (originDoc instanceof File && originDoc.size > 0) {
+        multipart.set('originDoc', originDoc, originDoc.name);
+      }
+
       const res = await fetch(`/api/events/${eventId}/participants`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name,
-          org,
-          position,
-          email,
-          phone,
-          providerId: providerId || undefined,
-          foodType,
-        }),
+        body: multipart,
       });
 
       if (!res.ok) {
@@ -308,6 +327,36 @@ export const RegistrationForm = ({
             defaultValue={initialProfile?.position}
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          เอกสารต้นสังกัดอนุมัติ{needOriginApprovePaper ? ' *' : ''}
+        </label>
+        <input
+          id="originDoc"
+          name="originDoc"
+          type="file"
+          accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            setDocName(file?.name ?? '');
+            if (docError) setDocError(null);
+          }}
+        />
+        <label
+          htmlFor="originDoc"
+          className="inline-flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+        >
+          <span className="inline-flex items-center gap-2 font-medium">
+            <Upload className="h-4 w-4" />
+            เลือกไฟล์เอกสาร
+          </span>
+          <span className="text-xs text-gray-500">{docName ? docName : 'ยังไม่ได้เลือกไฟล์'}</span>
+        </label>
+        <p className="mt-1 text-xs text-gray-600">รองรับไฟล์: pdf, jpg, png</p>
+        {docError && <p className="mt-1 text-xs text-red-500">{docError}</p>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

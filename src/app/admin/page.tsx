@@ -624,6 +624,51 @@ function ParticipantsModal({
     XLSX.writeFile(workbook, `${safeTitle}.xlsx`);
   };
 
+  const handleOpenOriginDoc = async (participant: Participant) => {
+    if (!canManage || !event) return;
+    try {
+      const token = await getJWTToken();
+      if (!token) {
+        throw new Error('ต้องมี JWT');
+      }
+
+      const res = await fetch(
+        `/api/events/${event.id}/participants/${participant.id}/origin-doc`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'ไม่สามารถเปิดเอกสารได้');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const opened = window.open(url, '_blank');
+      if (!opened) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = participant.originDocName || 'document';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 60_000);
+    } catch (e: any) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'เปิดเอกสารไม่ได้',
+        text: e?.message ?? 'เกิดข้อผิดพลาด',
+      });
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 py-6 overflow-auto">
       <div className="w-full max-w-6xl bg-white rounded-xl shadow-2xl border border-gray-200 p-6 space-y-4">
@@ -794,6 +839,17 @@ function ParticipantsModal({
                         <div className="w-28 flex items-start justify-end gap-2 text-xs">
                           {canManage && (
                             <>
+                              {!isEditing && current.originDocPath && (
+                                <button
+                                  type="button"
+                                  className="p-1.5 rounded-md border border-gray-200 hover:border-amber-200 hover:bg-amber-50 text-amber-700"
+                                  onClick={() => void handleOpenOriginDoc(current as Participant)}
+                                  title="ดูเอกสาร"
+                                  aria-label="ดูเอกสาร"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </button>
+                              )}
                               {isEditing ? (
                                 <>
                                   <button

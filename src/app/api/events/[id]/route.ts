@@ -42,6 +42,7 @@ export async function GET(
         longitude: true,
         enableCheckInRadius: true,
         regis_closed: true,
+        needOriginApprovePaper: true,
         checkInRadiusMeters: true,
         registered: true,
         capacity: true,
@@ -57,7 +58,26 @@ export async function GET(
         providerFullNameCreated: true,
         providerOrgNameCreated: true,
         datetimeCreated: true,
-        participants: true,
+        participants: {
+          select: {
+            id: true,
+            eventId: true,
+            name: true,
+            org: true,
+            position: true,
+            email: true,
+            phone: true,
+            providerId: true,
+            foodType: true,
+            status: true,
+            regDate: true,
+            regTime: true,
+            originDocPath: true,
+            originDocMime: true,
+            originDocName: true,
+            originDocUploadedAt: true,
+          },
+        },
       },
     });
 
@@ -146,6 +166,7 @@ export async function PUT(
     preTestLink,
     posTestLink,
     registerMethod,
+    needOriginApprovePaper,
   } = body as {
     title?: string;
     beginDate?: string;
@@ -164,6 +185,7 @@ export async function PUT(
     preTestLink?: string | null;
     posTestLink?: string | null;
     registerMethod?: number;
+    needOriginApprovePaper?: boolean;
   };
 
   const numericCapacity =
@@ -212,6 +234,9 @@ export async function PUT(
         preTestLink,
         posTestLink,
         registerMethod: registerMethod ?? 3,
+        ...(typeof needOriginApprovePaper === 'boolean'
+          ? { needOriginApprovePaper }
+          : {}),
         // If this event did not yet have an owner, claim it for the current provider
         ...(existingOwner ? {} : { providerIdCreated: String(requesterProviderId) }),
       },

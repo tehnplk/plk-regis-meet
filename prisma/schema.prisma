@@ -65,6 +65,7 @@ model Event {
   longitude   Float?
   enableCheckInRadius Boolean @default(false)
   regis_closed Boolean @default(false)
+  needOriginApprovePaper Boolean @default(false)
   checkInRadiusMeters Int?
   registered  Int
   capacity    Int
@@ -99,6 +100,11 @@ model Participant {
   status     String
   regDate    String
   regTime    DateTime @default(now())
+
+  originDocPath String?
+  originDocMime String?
+  originDocName String?
+  originDocUploadedAt DateTime?
 }
 
 model LoginLog {

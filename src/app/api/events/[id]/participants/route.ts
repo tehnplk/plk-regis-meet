@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTokenFromRequest, verifyToken } from '@/lib/jwt';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+
+export const runtime = 'nodejs';
 
 interface Params {
   id: string;
@@ -32,7 +37,28 @@ export async function GET(request: Request, { params }: { params: Promise<Params
 
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { participants: true },
+    select: {
+      participants: {
+        select: {
+          id: true,
+          eventId: true,
+          name: true,
+          org: true,
+          position: true,
+          email: true,
+          phone: true,
+          providerId: true,
+          foodType: true,
+          status: true,
+          regDate: true,
+          regTime: true,
+          originDocPath: true,
+          originDocMime: true,
+          originDocName: true,
+          originDocUploadedAt: true,
+        },
+      },
+    },
   });
 
   if (!event) {
@@ -55,38 +81,64 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  let body: unknown;
-
+  let form: FormData;
   try {
-    body = await request.json();
+    form = await request.formData();
   } catch {
-    return new NextResponse('Invalid JSON', { status: 400 });
+    return new NextResponse('Invalid form data', { status: 400 });
   }
 
-  if (!body || typeof body !== 'object') {
-    return new NextResponse('Invalid payload', { status: 400 });
-  }
-
-  const { name, org, position, email, phone, foodType, status, providerId } = body as {
-    name?: string;
-    org?: string;
-    position?: string;
-    email?: string;
-    phone?: string;
-    foodType?: 'normal' | 'islam';
-    status?: 'confirmed' | 'pending' | 'cancelled';
-    providerId?: string | null;
-  };
+  const name = String(form.get('name') ?? '').trim();
+  const org = String(form.get('org') ?? '').trim();
+  const position = String(form.get('position') ?? '').trim();
+  const email = String(form.get('email') ?? '').trim();
+  const phone = String(form.get('phone') ?? '').trim();
+  const providerId = String(form.get('providerId') ?? '').trim();
+  const foodTypeRaw = String(form.get('foodType') ?? '').trim();
+  const originDoc = form.get('originDoc');
 
   if (!name || !org || !phone) {
     return new NextResponse('Missing required fields', { status: 400 });
   }
 
-  const normalizedEmail = (email ?? '').trim();
+  const normalizedEmail = email;
+  const normalizedFoodType = foodTypeRaw === 'islam' ? 'islam' : 'normal';
+  const normalizedStatus: 'confirmed' | 'pending' | 'cancelled' = 'confirmed';
 
-  const normalizedFoodType = foodType === 'islam' ? 'islam' : 'normal';
-  const normalizedStatus: 'confirmed' | 'pending' | 'cancelled' =
-    status === 'pending' ? 'pending' : status === 'cancelled' ? 'cancelled' : 'confirmed';
+  const MAX_DOC_BYTES = 10 * 1024 * 1024;
+  const allowedMimes = new Set(['application/pdf', 'image/jpeg', 'image/png']);
+
+  let originDocPath: string | null = null;
+  let originDocMime: string | null = null;
+  let originDocName: string | null = null;
+  let originDocUploadedAt: Date | null = null;
+  let originDocBytes: Buffer | null = null;
+  let originDocExt: string | null = null;
+
+  if (originDoc instanceof File && originDoc.size > 0) {
+    if (originDoc.size > MAX_DOC_BYTES) {
+      return new NextResponse('File too large', { status: 413 });
+    }
+    const mime = (originDoc.type ?? '').toLowerCase();
+    if (!allowedMimes.has(mime)) {
+      return new NextResponse('Invalid file type', { status: 415 });
+    }
+    originDocMime = mime;
+    originDocName = originDoc.name || null;
+    originDocUploadedAt = new Date();
+
+    originDocExt = (() => {
+      if (mime === 'application/pdf') return 'pdf';
+      if (mime === 'image/jpeg') return 'jpg';
+      if (mime === 'image/png') return 'png';
+      return 'bin';
+    })();
+
+    const ab = await originDoc.arrayBuffer();
+    originDocBytes = Buffer.from(ab);
+  }
+
+  let createdAbsPath: string | null = null;
 
   try {
     const now = new Date();
@@ -102,6 +154,7 @@ export async function POST(request: Request, { params }: { params: Promise<Param
         select: {
           id: true,
           regis_closed: true,
+          needOriginApprovePaper: true,
           registered: true,
           capacity: true,
           status: true,
@@ -132,6 +185,21 @@ export async function POST(request: Request, { params }: { params: Promise<Param
         return { error: new NextResponse('Registration closed', { status: 403 }) } as const;
       }
 
+      if (event.needOriginApprovePaper && !originDocBytes) {
+        return { error: new NextResponse('Missing required document', { status: 400 }) } as const;
+      }
+
+      if (originDocBytes && originDocExt) {
+        const fileName = `${Date.now()}-${randomUUID()}.${originDocExt}`;
+        const relPath = path.posix.join('uploads', 'origin-docs', String(eventId), fileName);
+        const absPath = path.join(process.cwd(), ...relPath.split('/'));
+        const dir = path.dirname(absPath);
+        await fs.mkdir(dir, { recursive: true });
+        await fs.writeFile(absPath, originDocBytes);
+        createdAbsPath = absPath;
+        originDocPath = relPath;
+      }
+
       const willBeFull = event.registered + 1 >= event.capacity;
 
       const participant = await tx.participant.create({
@@ -147,6 +215,10 @@ export async function POST(request: Request, { params }: { params: Promise<Param
           status: normalizedStatus,
           regDate,
           regTime: now,
+          originDocPath: originDocPath ?? undefined,
+          originDocMime: originDocMime ?? undefined,
+          originDocName: originDocName ?? undefined,
+          originDocUploadedAt: originDocUploadedAt ?? undefined,
         },
       });
 
@@ -162,12 +234,26 @@ export async function POST(request: Request, { params }: { params: Promise<Param
     });
 
     if ('error' in result) {
+      if (createdAbsPath) {
+        try {
+          await fs.unlink(createdAbsPath);
+        } catch {
+          // ignore
+        }
+      }
       return result.error;
     }
 
     return NextResponse.json({ participant: result.participant }, { status: 201 });
   } catch (error) {
     console.error(error);
+    if (createdAbsPath) {
+      try {
+        await fs.unlink(createdAbsPath);
+      } catch {
+        // ignore
+      }
+    }
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

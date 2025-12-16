@@ -136,6 +136,7 @@ export default function RegisterByFormPageClient({
             Boolean(event && (event.status === 'full' || event.registered >= event.capacity))
             || isPastEvent
           }
+          needOriginApprovePaper={event?.needOriginApprovePaper}
           enableCheckInRadius={event?.enableCheckInRadius}
           checkInRadiusMeters={event?.checkInRadiusMeters}
           eventLatitude={event?.latitude}

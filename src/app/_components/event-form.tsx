@@ -49,6 +49,9 @@ export const EventForm = ({
   const [endDate, setEndDate] = useState(initialEvent?.endDate ?? '');
   const [datePickerTarget, setDatePickerTarget] = useState<'start' | 'end' | null>(null);
   const [registerMethod, setRegisterMethod] = useState<number>(initialEvent?.registerMethod ?? 3);
+  const [needOriginApprovePaper, setNeedOriginApprovePaper] = useState(
+    Boolean((initialEvent as any)?.needOriginApprovePaper),
+  );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -120,6 +123,7 @@ export const EventForm = ({
         posTestLink: posTestLinkRaw || null,
         secretPass: secretPassRaw || null,
         registerMethod,
+        needOriginApprovePaper,
       };
 
       const isEdit = mode === 'edit' && eventId != null;
@@ -297,6 +301,26 @@ export const EventForm = ({
               <span>เมตร</span>
             </label>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-slate-50 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">บังคับแนบเอกสาร</p>
+            <p className="text-xs text-gray-600">
+              หากเปิด ผู้ลงทะเบียนต้องแนบไฟล์ (pdf/jpg/png)
+            </p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              className="peer sr-only"
+              checked={needOriginApprovePaper}
+              onChange={(e) => setNeedOriginApprovePaper(e.target.checked)}
+              aria-label="สลับการบังคับแนบเอกสาร"
+            />
+            <div className="peer h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-emerald-600" />
+            <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6" />
+          </label>
         </div>
 
         <div>
