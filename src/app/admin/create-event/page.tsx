@@ -167,16 +167,20 @@ export default function CreateEventPage() {
                     {regisClosed ? 'ปิดให้ลงทะเบียน' : 'เปิดให้ลงทะเบียน'}
                   </p>
                 </div>
-                <label className="inline-flex items-center gap-2">
-                  <span className="text-xs text-gray-600">ปิด</span>
+                <label className="relative inline-flex cursor-pointer items-center">
                   <input
                     type="checkbox"
+                    className="peer sr-only"
                     checked={!regisClosed}
                     disabled={savingRegisClosed}
-                    onChange={(e) => updateRegisClosed(!e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    onChange={(e) => {
+                      const isOpen = e.target.checked;
+                      updateRegisClosed(!isOpen);
+                    }}
+                    aria-label="สลับสถานะการลงทะเบียน"
                   />
-                  <span className="text-xs text-gray-600">เปิด</span>
+                  <div className="peer h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-emerald-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-60" />
+                  <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6" />
                 </label>
               </div>
             )}
