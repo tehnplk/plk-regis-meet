@@ -330,39 +330,56 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
           <p className="text-gray-700 text-base mb-5 whitespace-pre-line">{event.description}</p>
 
           <div className="space-y-3 text-sm text-gray-700">
-            <div className="text-base font-semibold text-gray-800">
-              <DateDisplay startDate={event.beginDate} endDate={event.endDate} />
+            <div className="flex flex-col gap-1">
+              <div className="text-base font-semibold text-gray-800">
+                <DateDisplay startDate={event.beginDate} endDate={event.endDate} />
+              </div>
+              {daysUntil != null && daysUntil >= 0 && (
+                <div
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${
+                    daysUntil < 1
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}
+                >
+                  <Clock
+                    size={14}
+                    className={daysUntil < 1 ? 'text-emerald-700' : 'text-amber-700'}
+                  />
+                  <span>
+                    {daysUntil < 1 ? 'ถึงกำหนดแล้ว' : `ถึงกำหนดในอีก ${daysUntil} วัน`}
+                  </span>
+                </div>
+              )}
             </div>
-          {daysUntil != null && daysUntil >= 0 && (
-            <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">
-              <Clock size={14} className="text-amber-700" />
-              <span>ถึงกำหนดในอีก {daysUntil} วัน</span>
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-base">
-            <Clock size={18} className="text-emerald-500 shrink-0" />
-            <span className="font-semibold text-gray-900">{event.time}</span>
-          </div>
-          <div className="flex flex-col gap-0.5">
+
             <div className="flex items-center gap-2 text-base">
-              <MapPin size={18} className="text-emerald-500 shrink-0" />
-              <span className="truncate font-semibold text-gray-900">{event.location}</span>
+              <Clock size={18} className="text-emerald-500" />
+              <span>{event.time}</span>
             </div>
-            <a
-              href={
-                event.latitude != null && event.longitude != null
-                  ? `https://www.google.com/maps?q=${event.latitude},${event.longitude}`
-                  : event.location
-                  ? `https://www.google.com/maps?q=${encodeURIComponent(event.location)}`
-                  : '#'
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline ml-6 w-fit"
-            >
-              คลิกดูแผนที่
-            </a>
+
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-2 text-base">
+                <MapPin size={18} className="text-emerald-500" />
+                <span className="truncate">{event.location}</span>
+              </div>
+              <a
+                href={
+                  event.latitude != null && event.longitude != null
+                    ? `https://www.google.com/maps?q=${event.latitude},${event.longitude}`
+                    : event.location
+                    ? `https://www.google.com/maps?q=${encodeURIComponent(event.location)}`
+                    : '#'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline ml-6 w-fit"
+              >
+                คลิกดูแผนที่
+              </a>
+            </div>
           </div>
+
           <div className="flex items-center gap-2 text-sm mt-2">
             <FileText className="w-4 h-4 text-gray-600" />
             <span className="text-gray-700">เอกสาร</span>
@@ -385,7 +402,6 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
             </p>
             <p className="leading-relaxed break-words">{event.requiredItems || '-'}</p>
           </div>
-        </div>
 
         <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-3">
           <div className="flex flex-col items-center gap-1">

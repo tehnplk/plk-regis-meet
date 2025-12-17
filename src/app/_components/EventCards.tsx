@@ -111,9 +111,17 @@ export const EventCards = ({
                 <div className="space-y-2 text-sm text-gray-600">
                   <DateDisplay startDate={event.beginDate} endDate={event.endDate} />
                   {daysUntil != null && daysUntil >= 0 && (
-                    <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-medium">
-                      <Clock size={14} className="text-amber-700" />
-                      <span>ถึงกำหนดในอีก {daysUntil} วัน</span>
+                    <div
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${
+                        daysUntil < 1
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          : 'bg-amber-50 text-amber-800 border-amber-200'
+                      }`}
+                    >
+                      <Clock size={14} className={daysUntil < 1 ? 'text-emerald-700' : 'text-amber-700'} />
+                      <span>
+                        {daysUntil < 1 ? 'ถึงกำหนดแล้ว' : `ถึงกำหนดในอีก ${daysUntil} วัน`}
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
