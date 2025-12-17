@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { RegistrationForm, formatThaiDate } from '../../_components/event-ui';
 import type { Event } from '../../_data/database';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 
 type InitialProfile = {
   name?: string;
@@ -40,7 +41,7 @@ export default function RegisterByFormPageClient({
         if (!token) {
           throw new Error('auth required');
         }
-        const res = await fetch(`/api/events/${eventId}`, {
+        const res = await fetch(getApiUrl(`/api/events/${eventId}`), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 404) {

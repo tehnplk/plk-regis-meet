@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Header, EventCards } from './_components/event-ui';
 import type { Event } from './_data/database';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 
 export default function HomePage() {
 
@@ -22,7 +23,7 @@ export default function HomePage() {
         if (!token) {
           throw new Error('Missing JWT token');
         }
-        const res = await fetch('/api/events', {
+        const res = await fetch(getApiUrl('/api/events'), {
           signal: controller.signal,
           cache: 'no-store',
           headers: {

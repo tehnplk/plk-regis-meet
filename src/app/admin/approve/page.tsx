@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from '../../_components/event-ui';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 import Swal from 'sweetalert2';
 
 interface LoginLogSummary {
@@ -13,12 +14,19 @@ interface LoginLogSummary {
   loginCount: number;
 }
 
+const ADMIN_APPROVE_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_APPROVE_PASS ?? '';
+
 export default function AdminApprovePage() {
   const [logs, setLogs] = useState<LoginLogSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!ADMIN_APPROVE_PASSWORD) {
+      setError('ยังไม่ได้ตั้งค่า NEXT_PUBLIC_ADMIN_APPROVE_PASS ในไฟล์ .env');
+      return;
+    }
+
     const askPasswordAndLoad = async () => {
       try {
         const result = await Swal.fire({
@@ -41,7 +49,7 @@ export default function AdminApprovePage() {
         }
 
         const value = (result.value ?? '').trim();
-        if (value !== '112233') {
+        if (value !== ADMIN_APPROVE_PASSWORD) {
           await Swal.fire({
             icon: 'error',
             title: 'รหัสผ่านไม่ถูกต้อง',
@@ -56,7 +64,7 @@ export default function AdminApprovePage() {
         if (!token) {
           throw new Error('Missing JWT token');
         }
-        const res = await fetch('/api/admin/approve', {
+        const res = await fetch(getApiUrl('/api/admin/approve'), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -76,7 +84,7 @@ export default function AdminApprovePage() {
     };
 
     askPasswordAndLoad();
-  }, []);
+  }, [ADMIN_APPROVE_PASSWORD]);
 
   const renderOrganization = (org: any) => {
     const list = Array.isArray(org) ? org : [];

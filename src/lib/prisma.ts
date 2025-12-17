@@ -1,9 +1,24 @@
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
-const adapter = new PrismaBetterSqlite3({
-  url: 'file:./prisma/events.db',
-});
+const normalizeSqliteUrl = (url?: string) => {
+  if (!url?.startsWith('file:')) return url;
+
+  const prefix = 'file:';
+  const filePath = url.slice(prefix.length);
+
+  if (!filePath.startsWith('./') && !filePath.startsWith('../')) {
+    return url;
+  }
+
+  const absolutePath = path.resolve(process.cwd(), filePath);
+  return `${prefix}${absolutePath}`;
+};
+
+const normalizedDbUrl = normalizeSqliteUrl(process.env.DATABASE_URL);
+if (normalizedDbUrl && normalizedDbUrl !== process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = normalizedDbUrl;
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -12,7 +27,6 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    adapter,
     log: ['error', 'warn'],
   });
 

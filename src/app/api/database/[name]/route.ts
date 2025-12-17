@@ -52,7 +52,7 @@ export async function GET(
       )) ?? [];
     const columns =
       columnsInfo.length > 0
-        ? columnsInfo.map((c) => c.name)
+        ? columnsInfo.map((c: { name: string }) => c.name)
         : rows.length > 0
         ? Object.keys(rows[0])
         : [];

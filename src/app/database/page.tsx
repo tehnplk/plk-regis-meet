@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from '../_components/event-ui';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 
 interface TableSummary {
   name: string;
@@ -27,7 +28,7 @@ export default function DatabasePage() {
         if (!token) {
           throw new Error('Missing JWT token');
         }
-        const res = await fetch('/api/database', {
+        const res = await fetch(getApiUrl('/api/database'), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -60,7 +61,7 @@ export default function DatabasePage() {
       if (!token) {
         throw new Error('Missing JWT token');
       }
-      const res = await fetch(`/api/database/${encodeURIComponent(tableName)}`, {
+      const res = await fetch(getApiUrl(`/api/database/${encodeURIComponent(tableName)}`), {
         headers: {
           Authorization: `Bearer ${token}`,
         },

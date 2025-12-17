@@ -25,7 +25,13 @@ export async function GET(request: Request) {
         }[]
       >`SELECT providerId, fullname, organization, MAX(datetime) as lastLogin, COUNT(*) as loginCount FROM LoginLog GROUP BY providerId, fullname, organization ORDER BY lastLogin DESC`) ?? [];
 
-    const logs = rows.map((row) => ({
+    const logs = rows.map((row: {
+      providerId: string;
+      fullname: string;
+      organization: any;
+      lastLogin: string;
+      loginCount: bigint | number;
+    }) => ({
       providerId: row.providerId,
       fullname: row.fullname,
       organization: row.organization,

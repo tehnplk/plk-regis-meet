@@ -7,6 +7,7 @@ import type { Event } from '../../_data/database';
 import { Header } from '../../_components/event-ui';
 import { EventForm } from '../../_components/event-form';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
 export const dynamic = 'force-dynamic';
@@ -61,7 +62,7 @@ export default function CreateEventPage() {
           return;
         }
 
-        const res = await fetch(`/api/events/${eventId}`, {
+        const res = await fetch(getApiUrl(`/api/events/${eventId}`), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 404) {

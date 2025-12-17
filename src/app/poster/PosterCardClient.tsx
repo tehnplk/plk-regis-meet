@@ -16,6 +16,7 @@ import {
 import type { EventStatus, Participant } from '../_data/database';
 import { DateDisplay, StatusBadge } from '../_components/event-ui';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 
@@ -103,7 +104,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
       setLoadingParticipants(true);
       try {
         const fetchWithToken = async (token: string) =>
-          fetch(`/api/events/${event.id}`, {
+          fetch(getApiUrl(`/api/events/${event.id}`), {
             headers: {
               Authorization: `Bearer ${token}`,
             },

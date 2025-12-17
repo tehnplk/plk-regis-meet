@@ -1,10 +1,12 @@
 // Client-side JWT token management
+import { getApiUrl } from './api';
+
 const TOKEN_KEY = 'jwt_token';
 
 export async function getJWTToken(): Promise<string | null> {
   try {
     const tryFetch = async (url: string) => {
-      const res = await fetch(url);
+      const res = await fetch(getApiUrl(url));
       if (!res.ok) return null;
       const data = await res.json();
       const token = data.token as string | undefined;

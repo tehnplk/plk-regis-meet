@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Header, StatusBadge, DateDisplay } from '../_components/event-ui';
 import type { Event, Participant } from '../_data/database';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { Check, Pencil, Trash2, X, MapPin, Clock3, FileText, AlignLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -47,7 +48,7 @@ export default function AdminEventsPage() {
         if (!token) {
           throw new Error('ต้องมี JWT');
         }
-        const res = await fetch('/api/events', {
+        const res = await fetch(getApiUrl('/api/events'), {
           signal: controller.signal,
           cache: 'no-store',
           headers: {
@@ -80,7 +81,7 @@ export default function AdminEventsPage() {
       if (!token) {
         throw new Error('ต้องมี JWT เพื่อดึงรายชื่อ');
       }
-      const res = await fetch(`/api/events/${eventId}/participants`, {
+      const res = await fetch(getApiUrl(`/api/events/${eventId}/participants`), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -122,7 +123,7 @@ export default function AdminEventsPage() {
         status: updated.status,
       };
 
-      const res = await fetch(`/api/events/${selectedEvent.id}/participants`, {
+      const res = await fetch(getApiUrl(`/api/events/${selectedEvent.id}/participants`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +149,7 @@ export default function AdminEventsPage() {
     try {
       const token = await getJWTToken();
       if (!token) throw new Error('ต้องมี JWT');
-      const res = await fetch(`/api/events/${selectedEvent.id}/participants`, {
+      const res = await fetch(getApiUrl(`/api/events/${selectedEvent.id}/participants`), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

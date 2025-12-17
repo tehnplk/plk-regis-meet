@@ -1,17 +1,11 @@
 // Seed participants: ensure each event has at least 10 participants
 // Run with: node prisma/participants_20251204154000.cjs
 
-// NOTE: This script uses Prisma Client v7 and the same better-sqlite3 adapter
-// configuration as the main app.
+// NOTE: This script now uses the default Prisma Client connection.
 
 const { PrismaClient } = require('@prisma/client');
-const { PrismaBetterSqlite3 } = require('@prisma/adapter-better-sqlite3');
 
-const adapter = new PrismaBetterSqlite3({
-  url: 'file:./prisma/events.db',
-});
-
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 function formatThaiDate(date) {
   return date.toLocaleDateString('th-TH', {

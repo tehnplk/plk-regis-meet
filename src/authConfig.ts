@@ -3,6 +3,7 @@ import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const authOptions: NextAuthConfig = {
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH ? `${process.env.NEXT_PUBLIC_BASE_PATH}/api/auth` : '/api/auth',
   session: {
     strategy: 'jwt',
     maxAge: 60 * 60 * 25, // 25 hours

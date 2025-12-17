@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent, useMemo } from 'react';
 import { MapPin, AlertTriangle } from 'lucide-react';
 import { CheckCircle, UserPlus } from 'lucide-react';
 import { getJWTToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
@@ -206,7 +207,7 @@ export const RegistrationForm = ({
         throw new Error('Authentication required');
       }
 
-      const res = await fetch(`/api/events/${eventId}/participants`, {
+      const res = await fetch(getApiUrl(`/api/events/${eventId}/participants`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
