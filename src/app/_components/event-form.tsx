@@ -64,6 +64,7 @@ export const EventForm = ({
 
     const formData = new FormData(event.currentTarget);
     const title = String(formData.get('title') ?? '').trim();
+    const coordinatorNameRaw = String(formData.get('coordinatorName') ?? '').trim();
     const beginDate = startDate.trim();
     const endDateRaw = endDate.trim();
     const time = String(formData.get('time') ?? '').trim();
@@ -111,6 +112,7 @@ export const EventForm = ({
         endDate: endDateRaw || null,
         time,
         location,
+        coordinatorName: coordinatorNameRaw || null,
         capacity,
         description,
         latitude: selectedLatLng?.lat ?? null,
@@ -455,6 +457,19 @@ export const EventForm = ({
             defaultValue={(initialEvent as any)?.secretPass ?? undefined}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
             placeholder="ปล่อยว่างเพื่อใช้ 12345678"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            ผู้ประสาน
+          </label>
+          <input
+            name="coordinatorName"
+            type="text"
+            defaultValue={initialEvent?.coordinatorName ?? undefined}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+            placeholder="ระบุชื่อผู้ประสานงาน และ เบอร์ติดต่อ"
           />
         </div>
 

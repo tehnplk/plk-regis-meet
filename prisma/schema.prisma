@@ -61,6 +61,7 @@ model Event {
   endDate     String?
   time        String
   location    String
+  coordinatorName String?
   latitude    Float?
   longitude   Float?
   enableCheckInRadius Boolean @default(false)

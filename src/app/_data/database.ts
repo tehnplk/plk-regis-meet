@@ -17,6 +17,7 @@ export interface Event {
   endDate: string | null;
   time: string;
   location: string;
+  coordinatorName?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   enableCheckInRadius?: boolean;

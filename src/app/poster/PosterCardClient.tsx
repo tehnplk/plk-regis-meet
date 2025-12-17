@@ -26,6 +26,7 @@ type PosterEvent = {
   endDate: string | null;
   time: string;
   location: string;
+  coordinatorName?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   regis_closed?: boolean;
@@ -476,7 +477,7 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
           </div>
         </div>
 
-        {(event.providerFullNameCreated || event.providerOrgNameCreated) && (
+        {(event.providerFullNameCreated || event.providerOrgNameCreated || event.coordinatorName) && (
           <div className="mt-2 text-xs text-gray-500">
             {event.providerFullNameCreated && (
               <div>
@@ -488,6 +489,12 @@ export default function PosterCardClient({ event }: { event: PosterEvent }) {
               <div>
                 หน่วยงาน:{' '}
                 <span className="text-gray-700">{event.providerOrgNameCreated}</span>
+              </div>
+            )}
+            {event.coordinatorName && event.coordinatorName.trim() !== '' && (
+              <div>
+                ผู้ประสานงาน:{' '}
+                <span className="text-gray-700">{event.coordinatorName}</span>
               </div>
             )}
           </div>

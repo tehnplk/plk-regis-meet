@@ -174,6 +174,13 @@ export const EventCards = ({
                     />
                   </div>
                 </div>
+
+                {event.coordinatorName && event.coordinatorName.trim() !== '' && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    ผู้ประสานงาน:{' '}
+                    <span className="text-gray-700">{event.coordinatorName}</span>
+                  </div>
+                )}
               </div>
             </div>
           );

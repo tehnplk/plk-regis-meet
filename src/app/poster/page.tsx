@@ -27,6 +27,7 @@ export default async function PosterPage({
             endDate: true,
             time: true,
             location: true,
+            coordinatorName: true,
             latitude: true,
             longitude: true,
             regis_closed: true,

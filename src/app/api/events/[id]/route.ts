@@ -38,6 +38,7 @@ export async function GET(
         endDate: true,
         time: true,
         location: true,
+        coordinatorName: true,
         latitude: true,
         longitude: true,
         enableCheckInRadius: true,
@@ -154,6 +155,7 @@ export async function PUT(
     endDate,
     time,
     location,
+    coordinatorName,
     capacity,
     description,
     status,
@@ -173,6 +175,7 @@ export async function PUT(
     endDate?: string | null;
     time?: string;
     location?: string;
+    coordinatorName?: string | null;
     capacity?: number | string;
     description?: string;
     status?: string;
@@ -222,6 +225,11 @@ export async function PUT(
         endDate: endDate ?? null,
         time,
         location,
+        ...(typeof coordinatorName === 'string'
+          ? { coordinatorName: coordinatorName.trim() || null }
+          : coordinatorName === null
+            ? { coordinatorName: null }
+            : {}),
         latitude: numericLatitude,
         longitude: numericLongitude,
         enableCheckInRadius: Boolean(enableCheckInRadius),

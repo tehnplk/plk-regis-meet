@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     endDate,
     time,
     location,
+    coordinatorName,
     capacity,
     description,
     status,
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
     endDate?: string | null;
     time?: string;
     location?: string;
+    coordinatorName?: string | null;
     capacity?: number | string;
     description?: string;
     status?: string;
@@ -132,6 +134,10 @@ export async function POST(request: Request) {
         endDate: endDate ?? null,
         time,
         location,
+        coordinatorName:
+          typeof coordinatorName === 'string'
+            ? coordinatorName.trim() || null
+            : coordinatorName ?? null,
         latitude: numericLatitude,
         longitude: numericLongitude,
         enableCheckInRadius: Boolean(enableCheckInRadius),
